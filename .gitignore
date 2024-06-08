@@ -1,0 +1,10 @@
+################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs
+/obj
+/bin
+/SimaticArcorWebApi/obj
+/SimaticArcorWebApiTest/obj
+/SimaticArcorWebApi/bin

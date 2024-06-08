@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "SimaticWebApi": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "development"
+      }
+    }
+  }
+}
