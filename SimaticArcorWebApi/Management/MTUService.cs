@@ -40,6 +40,8 @@ namespace SimaticArcorWebApi.Management
 
         public ISimaticEquipmentService SimaticEquipmentService { get; set; }
 
+
+
         public MTUService(ISimaticService simaticService, ISimaticMTUService simaticMTUService, ISimaticMaterialService simaticMaterialService, ISimaticEquipmentService simaticEquipment)
         {
             if (logger == null) logger = ApplicationLogging.CreateLogger<MTUService>();
@@ -219,8 +221,280 @@ namespace SimaticArcorWebApi.Management
                         logger.LogInformation($"Procced search MTU id");
 
                         MaterialTrackingUnit mtu = await SimaticMTUService.GetMTUAsync(item, ct);
+                        var workOrder = await SimaticMTUService.GetPropertyWorkOrder(item, ct);
+                        IList<MTUPropiedadesDefectos> defectos = await GetPropertiesDefectos(item, ct);
+                        var maquinaDeCreacion = await SimaticMTUService.GetMaquinaDeCreacion(item, ct);
+
                         if (mtu != null)
                         {
+                            #region Print Label
+
+                            PrintModel label;
+
+                            if (mtu.MaterialNId.StartsWith("1") || mtu.MaterialNId.StartsWith("21") || mtu.MaterialNId.StartsWith("22") || mtu.MaterialNId.StartsWith("23"))
+                            {
+                                label = new PrintModel
+                                {
+                                    LabelTagsArseg = new ARSEGPrintModel { }, //este objeto es solo para arseg
+                                    LabelTagsOther = new OtherTagsModel { }, //Este Objeto es para otras etiquetas
+                                    LabelTagsRollos = new RolloPrintModel { },//Este objeto es solo para rollos
+                                    LabelTagsRecubrimiento = new RecubrimientoModel { }, //este objeto es solo para recubrimientos
+                                    LabelPrinter = req.Printer ?? "PRINT1",
+                                    NoOfCopies = "1",
+                                    LabelTagsMezclas = new MezclasPrintModel
+                                    {
+                                        TagCantidad = mtuReq.MtuQuantity,
+                                        TagDatetime = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss"),
+                                        TagDescripcion = "", //este debe ir vacio
+                                        Tagfecha_vcto = "",
+                                        TagLote = $"{item}",
+                                        TagLote_proveedor = "",
+                                        TagMaterial = $"{mtuReq.MaterialNId}",
+                                        TagObservaciones = " ",
+                                        TagOperario = req.Operario,
+                                        TagOrdenCompra = " ", //no tenemos el dato
+                                        TagProveedor = " ", //no tenemos el dato
+                                        TagReferencia = " ", //este debe ir vacio
+                                        TagUom = " " //este debe ir vacio
+                                    },
+                                    LabelTemplate = "Materiaprima",
+                                    LabelType = "ProductoenProcesoMezclasLbl",
+                                    PrintOperation = "Mezclas"
+                                };
+                            }
+                            else if (mtu.MaterialNId.StartsWith("3"))
+                            {
+                                var date = DateTime.Now;
+                                label = new PrintModel
+                                {
+                                    LabelPrinter = req.Printer ?? "PRINT1",
+                                    LabelTagsArseg = new ARSEGPrintModel { },
+                                    LabelTagsMezclas = new MezclasPrintModel { },
+                                    LabelTagsOther = new OtherTagsModel { },
+                                    LabelTagsRecubrimiento = new RecubrimientoModel { },
+                                    LabelTagsRollos = new RolloPrintModel
+                                    {
+                                        TagPtacnho = " ",
+                                        TagPtanchodecimales = " ",
+                                        TagPtcantidad = $"{mtuReq.MtuQuantity}",
+                                        TagPtdate = date.ToString("dd-MM-yyyy"),
+                                        TagPtdatetime = date.ToString("dd-MM-yyyy HH:mm:ss"),
+                                        TagPtdescripcion = " ",
+                                        TagPtdimensiones = " ",
+                                        TagPtidmaterial = $"{mtuReq.MaterialNId}",
+                                        TagPtlargo = " ",
+                                        TagPtlote = item,
+                                        TagPtmadeincolombia = " ",
+                                        TagPtoperario = req.Operario,
+                                        TagPtordendeproduccion = workOrder.PropertyValue,
+                                        TagPtpesoaproximado = " ",
+                                        TagPtqr = " ",
+                                        TagPtreferencia = " ",
+                                        TagPtresumenrollo = " ",
+                                        TagPtrollo = item,
+                                        TagPtuoman = " ",
+                                        TagPtuomlg = " "
+                                    },
+                                    LabelTemplate = "productoterminadozpl",
+                                    LabelType = "productoTerminadoLbl",
+                                    NoOfCopies = "1",
+                                    PrintOperation = "Rollos"
+                                };
+                            }
+                            else
+                            {
+                                var date = DateTime.Now;
+                                label = new PrintModel
+                                {
+                                    LabelTagsRecubrimiento = new RecubrimientoModel
+                                    {
+                                        TagPpmts2defec = " ", //Total de 'M2' de defecto del rollo
+                                        TagPpmtslindefc = " ", //Total de 'M' de defecto del rollo 
+                                        TagPpmtspra = $"{MetrosCuadradosAMetrosLinealesPorMaterial(Convert.ToDouble(mtuReq.MtuQuantity), mtuReq.MaterialNId).ToString("F4")}", //Total 'M' de la orden
+                                        TagPpmts2pra = $"{mtuReq.MtuQuantity}", // Total 'M2' de la order
+                                        TagPpobservaciones = " ", //Observaciones de la orden
+                                        TagPpoperario = req.Operario, //Nombre operario
+                                        TagPporden = workOrder[0].PropertyValue, //Orden de trabajo
+                                        TagPpreferencia = $"{mtuReq.MaterialNId}", //Material de la orden
+                                        TagPpresponsable = " ", //este debe ir vacio
+                                        TagPpmetroscuadrados = $"{mtuReq.MtuQuantity}", //'M2' para el Qr
+                                        TagPpcodigo = " ", //este debe ir vacio
+                                        TagPpdate = date.ToString("dd-MM-yyyy"), //Fecha de la operación
+                                        TagPpfechaformato = " ", //este debe ir vacio
+                                        TagPphora = date.ToString("HH:mm:ss"), //Hora de la operación
+                                        TagPpid = $"{mtuReq.MaterialNId}", //id del Material
+                                        TagPplamfint = " ", //Campo final del turno
+                                        TagPplote = item, //Lote generado
+                                        TagPpmaquina = maquinaDeCreacion[0].PropertyValue, //Equipo de trabajo
+                                        #region defectos
+                                        //campo metraje inicial
+                                        TagPpmi1 = " ",
+                                        TagPpmi2 = " ",
+                                        TagPpmi3 = " ",
+                                        TagPpmi4 = " ",
+                                        TagPpmi5 = " ",
+                                        TagPpmi6 = " ",
+                                        TagPpmi7 = " ",
+
+                                        //campo metraje final
+                                        TagPpmf1 = " ",
+                                        TagPpmf2 = " ",
+                                        TagPpmf3 = " ",
+                                        TagPpmf4 = " ",
+                                        TagPpmf5 = " ",
+                                        TagPpmf6 = " ",
+                                        TagPpmf7 = " ",
+
+                                        //campo cod
+                                        TagPpcod1 = " ",
+                                        TagPpcod2 = " ",
+                                        TagPpcod3 = " ",
+                                        TagPpcod4 = " ",
+                                        TagPpcod5 = " ",
+                                        TagPpcod6 = " ",
+                                        TagPpcod7 = " ",
+
+                                        //campo Descripción del defecto
+                                        TagPpdesdf1 = " ",
+                                        TagPpdesdf2 = " ",
+                                        TagPpdesdf3 = " ",
+                                        TagPpdesdf4 = " ",
+                                        TagPpdesdf5 = " ",
+                                        TagPpdesdf6 = " ",
+                                        TagPpdesdf7 = " ",
+
+                                        //campo G
+                                        TagPpg1 = " ",
+                                        TagPpg2 = " ",
+                                        TagPpg3 = " ",
+                                        TagPpg4 = " ",
+                                        TagPpg5 = " ",
+                                        TagPpg6 = " ",
+                                        TagPpg7 = " ",
+
+                                        //campo D
+                                        TagPpd1 = " ",
+                                        TagPpd2 = " ",
+                                        TagPpd3 = " ",
+                                        TagPpd4 = " ",
+                                        TagPpd5 = " ",
+                                        TagPpd6 = " ",
+                                        TagPpd7 = " ",
+
+                                        //campo C
+                                        TagPpc1 = " ",
+                                        TagPpc2 = " ",
+                                        TagPpc3 = " ",
+                                        TagPpc4 = " ",
+                                        TagPpc5 = " ",
+                                        TagPpc6 = " ",
+                                        TagPpc7 = " ",
+
+                                        //campo metro del defecto
+                                        TagPpmd1 = " ",
+                                        TagPpmd2 = " ",
+                                        TagPpmd3 = " ",
+                                        TagPpmd4 = " ",
+                                        TagPpmd5 = " ",
+                                        TagPpmd6 = " ",
+                                        TagPpmd7 = " "
+                                        #endregion
+                                    },
+                                    LabelPrinter = req.Printer ?? "PRINT1",
+                                    NoOfCopies = "1",
+                                    LabelTagsArseg = new ARSEGPrintModel { }, //este objeto es solo para arseg
+                                    LabelTagsOther = new OtherTagsModel { }, //Este Objeto es para otras etiquetas
+                                    LabelTagsRollos = new RolloPrintModel { }, //Este objeto es solo para rollos
+                                    LabelTagsMezclas = new MezclasPrintModel { }, //este objeto es solo para mezclas
+                                    LabelTemplate = "productoenprocesozpl",
+                                    LabelType = "ProductoenProcesoLbl",
+                                    PrintOperation = "Recubrimiento"
+                                };
+
+                                if (defectos != null)
+                                {
+                                    foreach (MTUPropiedadesDefectos defect in defectos)
+                                    {
+                                        switch (defect.Id)
+                                        {
+                                            case 1:
+                                                label.LabelTagsRecubrimiento.TagPpmi1 = defect.Metraje_Inicial ?? " ";
+                                                label.LabelTagsRecubrimiento.TagPpmf1 = defect.Metraje_Final ?? " ";
+                                                label.LabelTagsRecubrimiento.TagPpcod1 = defect.Codigo ?? " ";
+                                                label.LabelTagsRecubrimiento.TagPpdesdf1 = defect.Descripcion ?? " ";
+                                                label.LabelTagsRecubrimiento.TagPpg1 = defect.G ?? " ";
+                                                label.LabelTagsRecubrimiento.TagPpc1 = defect.C ?? " ";
+                                                label.LabelTagsRecubrimiento.TagPpd1 = defect.O ?? " ";
+                                                label.LabelTagsRecubrimiento.TagPpmd1 = $"{defect.Cantidad}" ?? " ";
+                                                break;
+                                            case 2:
+                                                label.LabelTagsRecubrimiento.TagPpmi2 = defect.Metraje_Inicial ?? " ";
+                                                label.LabelTagsRecubrimiento.TagPpmf2 = defect.Metraje_Final ?? " ";
+                                                label.LabelTagsRecubrimiento.TagPpcod2 = defect.Codigo ?? " ";
+                                                label.LabelTagsRecubrimiento.TagPpdesdf2 = defect.Descripcion ?? " ";
+                                                label.LabelTagsRecubrimiento.TagPpg2 = defect.G ?? " ";
+                                                label.LabelTagsRecubrimiento.TagPpc2 = defect.C ?? " ";
+                                                label.LabelTagsRecubrimiento.TagPpd2 = defect.O ?? " ";
+                                                label.LabelTagsRecubrimiento.TagPpmd2 = $"{defect.Cantidad}" ?? " ";
+                                                break;
+                                            case 3:
+                                                label.LabelTagsRecubrimiento.TagPpmi3 = defect.Metraje_Inicial ?? " ";
+                                                label.LabelTagsRecubrimiento.TagPpmf3 = defect.Metraje_Final ?? " ";
+                                                label.LabelTagsRecubrimiento.TagPpcod3 = defect.Codigo ?? " ";
+                                                label.LabelTagsRecubrimiento.TagPpdesdf3 = defect.Descripcion ?? " ";
+                                                label.LabelTagsRecubrimiento.TagPpg3 = defect.G ?? " ";
+                                                label.LabelTagsRecubrimiento.TagPpc3 = defect.C ?? " ";
+                                                label.LabelTagsRecubrimiento.TagPpd3 = defect.O ?? " ";
+                                                label.LabelTagsRecubrimiento.TagPpmd3 = $"{defect.Cantidad}" ?? " ";
+                                                break;
+                                            case 4:
+                                                label.LabelTagsRecubrimiento.TagPpmi4 = defect.Metraje_Inicial ?? " ";
+                                                label.LabelTagsRecubrimiento.TagPpmf4 = defect.Metraje_Final ?? " ";
+                                                label.LabelTagsRecubrimiento.TagPpcod4 = defect.Codigo ?? " ";
+                                                label.LabelTagsRecubrimiento.TagPpdesdf4 = defect.Descripcion ?? " ";
+                                                label.LabelTagsRecubrimiento.TagPpg4 = defect.G ?? " ";
+                                                label.LabelTagsRecubrimiento.TagPpc4 = defect.C ?? " ";
+                                                label.LabelTagsRecubrimiento.TagPpd4 = defect.O ?? " ";
+                                                label.LabelTagsRecubrimiento.TagPpmd4 = $"{defect.Cantidad}" ?? " ";
+                                                break;
+                                            case 5:
+                                                label.LabelTagsRecubrimiento.TagPpmi5 = defect.Metraje_Inicial ?? " ";
+                                                label.LabelTagsRecubrimiento.TagPpmf5 = defect.Metraje_Final ?? " ";
+                                                label.LabelTagsRecubrimiento.TagPpcod5 = defect.Codigo ?? " ";
+                                                label.LabelTagsRecubrimiento.TagPpdesdf5 = defect.Descripcion ?? " ";
+                                                label.LabelTagsRecubrimiento.TagPpg5 = defect.G ?? " ";
+                                                label.LabelTagsRecubrimiento.TagPpc5 = defect.C ?? " ";
+                                                label.LabelTagsRecubrimiento.TagPpd5 = defect.O ?? " ";
+                                                label.LabelTagsRecubrimiento.TagPpmd5 = $"{defect.Cantidad}" ?? " ";
+                                                break;
+                                            case 6:
+                                                label.LabelTagsRecubrimiento.TagPpmi6 = defect.Metraje_Inicial ?? " ";
+                                                label.LabelTagsRecubrimiento.TagPpmf6 = defect.Metraje_Final ?? " ";
+                                                label.LabelTagsRecubrimiento.TagPpcod6 = defect.Codigo ?? " ";
+                                                label.LabelTagsRecubrimiento.TagPpdesdf6 = defect.Descripcion ?? " ";
+                                                label.LabelTagsRecubrimiento.TagPpg6 = defect.G ?? " ";
+                                                label.LabelTagsRecubrimiento.TagPpc6 = defect.C ?? " ";
+                                                label.LabelTagsRecubrimiento.TagPpd6 = defect.O ?? " ";
+                                                label.LabelTagsRecubrimiento.TagPpmd6 = $"{defect.Cantidad}" ?? " ";
+                                                break;
+                                            case 7:
+                                                label.LabelTagsRecubrimiento.TagPpmi7 = defect.Metraje_Inicial ?? " ";
+                                                label.LabelTagsRecubrimiento.TagPpmf7 = defect.Metraje_Final ?? " ";
+                                                label.LabelTagsRecubrimiento.TagPpcod7 = defect.Codigo ?? " ";
+                                                label.LabelTagsRecubrimiento.TagPpdesdf7 = defect.Descripcion ?? " ";
+                                                label.LabelTagsRecubrimiento.TagPpg7 = defect.G ?? " ";
+                                                label.LabelTagsRecubrimiento.TagPpc7 = defect.C ?? " ";
+                                                label.LabelTagsRecubrimiento.TagPpd7 = defect.O ?? " ";
+                                                label.LabelTagsRecubrimiento.TagPpmd7 = $"{defect.Cantidad}" ?? " ";
+                                                break;
+                                        }
+                                    }
+                                }
+                            }
+
+                            #endregion
+                            logger.LogInformation($"Found id [{mtu.Id}] for MTU [{item}] procced Print Label ");
+                            await PrintLabel(label, ct);
                             logger.LogInformation($"Found id [{mtu.Id}] for MTU [{item}] procced Unassign ");
                             await SimaticMTUService.UnassignMTURequired(mtuReq.Id, ct);
                             await SimaticMTUService.SetMaterialTrackingUnitStatus(mtu.Id, "Liberar", ct);
@@ -713,7 +987,7 @@ namespace SimaticArcorWebApi.Management
                 //{
                 //    model = new TagModel
                 //    {
-                //        TagName = "descripcion",
+                //        TagName = "Descripcion",
                 //        TagValue = req.LabelTagsRecubrimiento.TagPpfechaformato
                 //    };
                 //    TagModelList.Add(model);
@@ -3514,7 +3788,7 @@ namespace SimaticArcorWebApi.Management
         }
 
         /// <summary>
-        /// Mueve MTU completo o parte de el al destino indicado.
+        /// Mueve MTU completo O parte de el al destino indicado.
         /// Si el lote no existe, se crea.
         /// </summary>
         /// <param name="req"></param>
@@ -3720,6 +3994,31 @@ namespace SimaticArcorWebApi.Management
 
             // Concatenar los elementos restantes para formar el campo
             return string.Join(" ", middleParts);
+        }
+
+        private static double MetrosCuadradosAMetrosLinealesPorMaterial(double area, string material)
+        {
+            string[] arrayMaterial = material.Split('.');
+            Console.WriteLine("array material: " + string.Join(", ", arrayMaterial));
+
+            string anchoStr = arrayMaterial[arrayMaterial.Length - 1].Split('-')[0];
+            double ancho = ConvertirMMaM(anchoStr);
+            Console.WriteLine("ancho: " + ancho);
+
+            double longitud = area / ancho;
+            return longitud;
+        }
+
+        private static double ConvertirMMaM(string mmStr)
+        {
+            if (double.TryParse(mmStr, out double mm))
+            {
+                return mm / 1000.0; // Convertir mm a metros
+            }
+            else
+            {
+                throw new ArgumentException("El valor proporcionado no es un número válido.");
+            }
         }
 
     }

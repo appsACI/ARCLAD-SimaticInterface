@@ -67,9 +67,9 @@ namespace SimaticArcorWebApi.Management
         #endregion
 
         #region Print Labels
-
         Task<dynamic> PrintLabel(PrintModel req, TagModel[] tags, CancellationToken token);
-
+        Task<dynamic> GetPropertyWorkOrder(string Id, CancellationToken token);
+        Task<dynamic> GetMaquinaDeCreacion(string Id, CancellationToken token);
         #endregion
 
         #region Other

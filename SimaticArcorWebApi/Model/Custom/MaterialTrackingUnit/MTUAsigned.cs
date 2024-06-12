@@ -14,6 +14,7 @@ namespace SimaticArcorWebApi.Model.Custom.MaterialTrackingUnit
         public string Mtu { get; set; }
         public decimal MtuQuantity { get; set; }
         public string WorkOrderNId { get; set; }
+        public string MtuUoM { get; set; }
     }
 
     public class MTUUnassign
@@ -25,6 +26,8 @@ namespace SimaticArcorWebApi.Model.Custom.MaterialTrackingUnit
     {
         public string WorkOrderNid { get; set; }
         public string[] MTUNid{ get; set; }
+        public string Printer{ get; set; }
+        public string Operario{ get; set; }
     }
 
     public class DeleteMaterialRequirementMTU
