@@ -224,6 +224,10 @@ namespace SimaticArcorWebApi.Management
                         var workOrder = await SimaticMTUService.GetPropertyWorkOrder(item, ct);
                         IList<MTUPropiedadesDefectos> defectos = await GetPropertiesDefectos(item, ct);
                         var maquinaDeCreacion = await SimaticMTUService.GetMaquinaDeCreacion(item, ct);
+                        if (maquinaDeCreacion == null)
+                        {
+
+                        }
 
                         if (mtu != null)
                         {
@@ -286,7 +290,7 @@ namespace SimaticArcorWebApi.Management
                                         TagPtlote = item,
                                         TagPtmadeincolombia = " ",
                                         TagPtoperario = req.Operario,
-                                        TagPtordendeproduccion = workOrder.PropertyValue,
+                                        TagPtordendeproduccion = workOrder != null ? workOrder[0].PropertyValue : "",
                                         TagPtpesoaproximado = " ",
                                         TagPtqr = " ",
                                         TagPtreferencia = " ",
@@ -415,6 +419,8 @@ namespace SimaticArcorWebApi.Management
                                 {
                                     foreach (MTUPropiedadesDefectos defect in defectos)
                                     {
+                                        label.LabelTagsRecubrimiento.TagPpmts2defec = defect.TotalM2 ?? " ";
+                                        label.LabelTagsRecubrimiento.TagPpmtslindefc = defect.TotalM ?? " ";
                                         switch (defect.Id)
                                         {
                                             case 1:
@@ -3958,6 +3964,13 @@ namespace SimaticArcorWebApi.Management
                                     break;
                                 case "O":
                                     mtuProperty.O = property.PropertyValue;
+                                    break;
+
+                                case "Total M":
+                                    mtuProperty.TotalM = property.PropertyValue;
+                                    break;
+                                case "Total M2":
+                                    mtuProperty.TotalM2 = property.PropertyValue;
                                     break;
                                 default:
                                     break;
