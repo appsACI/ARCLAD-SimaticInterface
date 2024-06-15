@@ -3,8 +3,4 @@
 ################################################################################
 
 /.vs
-/obj
-/bin
-/SimaticArcorWebApi/obj
-/SimaticArcorWebApiTest/obj
-/SimaticArcorWebApi/bin
+
