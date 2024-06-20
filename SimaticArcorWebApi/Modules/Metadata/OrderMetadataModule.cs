@@ -36,7 +36,8 @@ namespace SimaticArcorWebApi.Modules.Metadata
                 typeof(MaterialTrackingUnitProperty),
                 typeof(MaterialOperationEmpaqueCorteHojas),
                 typeof(MaterialsQuantity),
-                typeof(RTDSRequest)
+                typeof(RTDSRequest),
+                typeof(SpecificationRequest)
             );
 
             Describe["CreateOrders"] = description => description.AsSwagger(
@@ -151,6 +152,17 @@ namespace SimaticArcorWebApi.Modules.Metadata
                          .Response((int)HttpStatusCode.OK, r => r.Description("Solicitud exitosa").Schema<string>())
                          .Response((int)HttpStatusCode.InternalServerError, r => r.Description("Error interno del servidor"))
                          .BodyParameter(p => p.Description("Datos para enviar a RTDSWrite").Name("body").Schema<RTDSRequest>())
+                 )
+             );
+
+            Describe["Specification"] = description => description.AsSwagger(
+                 with => with.Operation(
+                     op => op.OperationId("Specification")
+                         .Tag("Specification")
+                         .Summary("Specification")
+                         .Response((int)HttpStatusCode.OK, r => r.Description("Solicitud exitosa").Schema<string>())
+                         .Response((int)HttpStatusCode.InternalServerError, r => r.Description("Error interno del servidor"))
+                         .BodyParameter(p => p.Description("Datos para enviar a RTDSWrite").Name("body").Schema<SpecificationRequest>())
                  )
              );
 

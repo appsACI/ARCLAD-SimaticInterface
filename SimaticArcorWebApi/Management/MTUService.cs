@@ -224,10 +224,6 @@ namespace SimaticArcorWebApi.Management
                         var workOrder = await SimaticMTUService.GetPropertyWorkOrder(item, ct);
                         IList<MTUPropiedadesDefectos> defectos = await GetPropertiesDefectos(item, ct);
                         var maquinaDeCreacion = await SimaticMTUService.GetMaquinaDeCreacion(item, ct);
-                        if (maquinaDeCreacion == null)
-                        {
-
-                        }
 
                         if (mtu != null)
                         {
@@ -290,7 +286,7 @@ namespace SimaticArcorWebApi.Management
                                         TagPtlote = item,
                                         TagPtmadeincolombia = " ",
                                         TagPtoperario = req.Operario,
-                                        TagPtordendeproduccion = workOrder != null ? workOrder[0].PropertyValue : "",
+                                        TagPtordendeproduccion = workOrder.Count >=1 ? workOrder[0].PropertyValue : "",
                                         TagPtpesoaproximado = " ",
                                         TagPtqr = " ",
                                         TagPtreferencia = " ",
@@ -314,11 +310,11 @@ namespace SimaticArcorWebApi.Management
                                     {
                                         TagPpmts2defec = " ", //Total de 'M2' de defecto del rollo
                                         TagPpmtslindefc = " ", //Total de 'M' de defecto del rollo 
-                                        TagPpmtspra = $"{MetrosCuadradosAMetrosLinealesPorMaterial(Convert.ToDouble(mtuReq.MtuQuantity), mtuReq.MaterialNId).ToString("F4")}", //Total 'M' de la orden
+                                        TagPpmtspra = $"{MetrosCuadradosAMetrosLinealesPorMaterial(Convert.ToDouble(mtuReq.MtuQuantity), mtuReq.MaterialNId)}", //Total 'M' de la orden
                                         TagPpmts2pra = $"{mtuReq.MtuQuantity}", // Total 'M2' de la order
                                         TagPpobservaciones = " ", //Observaciones de la orden
                                         TagPpoperario = req.Operario, //Nombre operario
-                                        TagPporden = workOrder[0].PropertyValue, //Orden de trabajo
+                                        TagPporden = workOrder.Count >= 1 ? workOrder[0].PropertyValue : "", //Orden de trabajo
                                         TagPpreferencia = $"{mtuReq.MaterialNId}", //Material de la orden
                                         TagPpresponsable = " ", //este debe ir vacio
                                         TagPpmetroscuadrados = $"{mtuReq.MtuQuantity}", //'M2' para el Qr
@@ -329,7 +325,7 @@ namespace SimaticArcorWebApi.Management
                                         TagPpid = $"{mtuReq.MaterialNId}", //id del Material
                                         TagPplamfint = " ", //Campo final del turno
                                         TagPplote = item, //Lote generado
-                                        TagPpmaquina = maquinaDeCreacion[0].PropertyValue, //Equipo de trabajo
+                                        TagPpmaquina = maquinaDeCreacion.Count >= 1 ? maquinaDeCreacion[0].PropertyValue : "", //Equipo de trabajo
                                         #region defectos
                                         //campo metraje inicial
                                         TagPpmi1 = " ",
@@ -415,7 +411,7 @@ namespace SimaticArcorWebApi.Management
                                     PrintOperation = "Recubrimiento"
                                 };
 
-                                if (defectos != null)
+                                if (defectos.Count >= 1)
                                 {
                                     foreach (MTUPropiedadesDefectos defect in defectos)
                                     {
@@ -4019,6 +4015,7 @@ namespace SimaticArcorWebApi.Management
             Console.WriteLine("ancho: " + ancho);
 
             double longitud = area / ancho;
+            Console.WriteLine("longitud: " + longitud);
             return longitud;
         }
 

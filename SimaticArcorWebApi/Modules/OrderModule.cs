@@ -84,6 +84,8 @@ namespace SimaticArcorWebApi.Modules
 
             Post("/rtdsWrite", PostToRTDSWriteAsync, name: "PostToRTDSWrite");
 
+            Post("/specification", SpecificationAsync, name: "Specification");
+
             Post("/UpdateCounters", UpdateCounters, name: "UpdateCounters");
         }
 
@@ -602,6 +604,30 @@ namespace SimaticArcorWebApi.Modules
             catch (Exception e)
             {
                 logger.LogError(e, "Error during POST to RTDSWrite");
+                return Negotiate.WithStatusCode(HttpStatusCode.InternalServerError).WithModel(e.Message);
+            }
+        }
+
+        private async Task<dynamic> SpecificationAsync(dynamic parameters, CancellationToken ct)
+        {
+            try
+            {
+                if (config.EnableRequestLogging)
+                {
+                    logger.LogInformation($"Body:[{RequestStream.FromStream(Request.Body).AsString()}]");
+                    Request.Body.Position = 0;
+                }
+
+                var requestBody = this.Bind<Specification>();
+                var response = await SimaticService.CreateSpecificationIfNotExistsAsync(requestBody, ct);
+                return response;
+                //var responseContent = await response.Content.ReadAsStringAsync();
+                //var statusCode = (int)response.StatusCode;
+                //return Negotiate.WithStatusCode(statusCode).WithModel(responseContent);
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e, "Error during POST to Specification");
                 return Negotiate.WithStatusCode(HttpStatusCode.InternalServerError).WithModel(e.Message);
             }
         }

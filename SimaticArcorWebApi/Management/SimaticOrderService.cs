@@ -1857,6 +1857,79 @@ namespace SimaticArcorWebApi.Management
                 return response;
             }
         }
+
+        public async Task<bool> SpecificationExistsAsync(string spValue, CancellationToken ct)
+        {
+            using (var client = new AuditableHttpClient(logger))
+            {
+                client.BaseAddress = new Uri("http://10.10.0.137/OpcenterRDnLGIL/");
+                client.DefaultRequestHeaders.Accept.Clear();
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", "QVJDTEFEXGdydXBvLmFjaTpBQzFncjB1cCsyMDIy");
+
+                var response = await client.GetAsync($"odata/RndvSp?$filter=SP_VALUE eq '{spValue}'", ct).ConfigureAwait(false);
+                SimaticServerHelper.CheckFaultResponse(ct, response, logger);
+
+                return await response.Content.ReadAsStringAsync()
+                    .ContinueWith(task =>
+                    {
+                        var result = JsonConvert.DeserializeObject<dynamic>(task.Result);
+
+                        if (result.value != null && result.value.Count >= 1)
+                        {
+                            return true;
+                        }
+
+                        return false;
+                    }, ct);
+            }
+        }
+
+        public async Task<HttpResponseMessage> CreateSpecificationAsync(Specification specification, CancellationToken ct)
+        {
+            using (var client = new AuditableHttpClient(logger))
+            {
+                client.BaseAddress = new Uri("http://10.10.0.137/OpcenterRDnLGIL/");
+                client.DefaultRequestHeaders.Accept.Clear();
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", "QVJDTEFEXGdydXBvLmFjaTpBQzFncjB1cCsyMDIy");
+                var json = JsonConvert.SerializeObject(specification);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                var response = await client.PostAsync("odata/CreateSpecification", content, ct).ConfigureAwait(false);
+                return response;
+            }
+        }
+
+        public async Task<HttpResponseMessage> UpdateSpecificationAsync(Specification specification, CancellationToken ct)
+        {
+            using (var client = new AuditableHttpClient(logger))
+            {
+                client.BaseAddress = new Uri("http://10.10.0.137/OpcenterRDnLGIL/");
+                client.DefaultRequestHeaders.Accept.Clear();
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", "QVJDTEFEXGdydXBvLmFjaTpBQzFncjB1cCsyMDIy");
+                var json = JsonConvert.SerializeObject(specification);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                var response = await client.PostAsync("odata/CreateSpecification", content, ct).ConfigureAwait(false);
+                return response;
+            }
+        }
+
+        public async Task<bool> CreateSpecificationIfNotExistsAsync(Specification specification, CancellationToken ct)
+        {
+            var existSpecification = await SpecificationExistsAsync(specification.SP_VALUE, ct);
+            if (!existSpecification)
+            {
+                var response = await CreateSpecificationAsync(specification, ct);
+                response.EnsureSuccessStatusCode();
+            }
+            //else
+            //{
+            //    var response = await UpdateSpecificationAsync(specification, ct);
+            //    response.EnsureSuccessStatusCode();
+            //}
+            return true;
+        }
         #endregion
 
     }

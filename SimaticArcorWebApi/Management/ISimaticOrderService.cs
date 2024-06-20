@@ -111,6 +111,8 @@ namespace SimaticArcorWebApi.Management
 
         Task<HttpResponseMessage> PostToRTDSWriteAsync(RTDS requestBody, CancellationToken ct);
 
+        Task<bool> CreateSpecificationIfNotExistsAsync(Specification requestBody, CancellationToken ct);
+
         Task<string> AddMaterialReprosesoWorkOrderAsync(WorkOrderOperationMaterialRequirement[] materiales, string workOrderOperationId, CancellationToken ct);
         Task<string> AddMaterialReprosesoOrderAsync(OrderOperationMaterialRequirement[] materiales, string orderOperationId, CancellationToken ct);
         Task<dynamic> GetOrderOperationAsync(Guid WorkOrderId, CancellationToken token);
