@@ -3,16 +3,8 @@ using Microsoft.Extensions.Logging;
 using SimaticArcorWebApi.Model.Custom.WorkOrderCompletion;
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Nancy;
-using SimaticArcorWebApi.Exceptions;
-using SimaticArcorWebApi.Model.Simatic.Material;
-using SimaticArcorWebApi.Model.Simatic.Order;
-using SimaticArcorWebApi.Model.Simatic.WorkOrder;
 
 namespace SimaticArcorWebApi.Management
 {
@@ -25,6 +17,7 @@ namespace SimaticArcorWebApi.Management
 
         public ISimaticService SimaticService { get; set; }
         public ISimaticWorkOrderCompletionService SimaticWorkOrderCompletionService { get; set; }
+        public ISimaticOrderService SimaticOrderService { get; set; }
 
 
         public WorkOrderCompletionService(ISimaticService simatic, ISimaticWorkOrderCompletionService SimaticWOCompletionService)
@@ -36,7 +29,7 @@ namespace SimaticArcorWebApi.Management
 
         }
 
-        public async Task CreateWoCompletionAsync(WorkOrderCompletionModel prod)
+        public async Task CreateWoCompletionAsync(WorkOrderCompletionModel prod, CancellationToken ct)
         {
 
             string woId = string.Empty;
@@ -47,9 +40,10 @@ namespace SimaticArcorWebApi.Management
 
 
             #region -- Create / ReCreate Order & WorkOrder --
+            //var infoWorkOrder = await SimaticOrderService.GetOrderByNameAsync(Convert.ToString(prod.woChildrenId), ct);
 
             // This operation always recreates an Order, this is IOInteroperability standard behaviour.
-            woId = await SimaticWorkOrderCompletionService.CreateWoCompletionAsync(prod);
+            woId = await SimaticWorkOrderCompletionService.CreateWoCompletionAsync(prod ,ct);
 
             // Further operations on the Order and WorkOrder
             if (!string.IsNullOrEmpty(woId))

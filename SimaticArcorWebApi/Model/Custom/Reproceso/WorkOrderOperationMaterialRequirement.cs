@@ -49,4 +49,9 @@ namespace SimaticWebApi.Model.Custom.Reproceso
         public OrderOperationMaterialRequirement[] OrderOperationMaterialRequirements { get; set; }
     }
 
+    public class MaterialReproceso
+    {
+        public string Material { get; set; }
+        public QuantityReproceso Quantity { get; set; }
+    }
 }

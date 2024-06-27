@@ -138,14 +138,12 @@ namespace SimaticArcorWebApi.Model.Simatic.Order
     {
         public string SP_VALUE { get; set; }
         public string DESCRIPTION { get; set; }
-        public string FR_VALUE { get; set; }
-        public int STYPE { get; set; }
-        public int LC { get; set; }
-        public int CONTEXT { get; set; }
-        public string CONTEXT_KEY1 { get; set; }
-        public string CONTEXT_KEY2 { get; set; }
-        public string CONTEXT_KEY3 { get; set; }
-        public string CONTEXT_KEY4 { get; set; }
-        public string CONTEXT_KEY5 { get; set; }
+        public string AR_TIPO { get; set; }
+        public string AR_CATEGORIA { get; set; }
+        public string AR_GRUPO { get; set; }
+        public int? BASE_QUANTITY { get; set; }
+        public string BASE_UOM { get; set; }
+        public string[] PLANT { get; set; }
+        public string LIFE_TIME { get; set; }
     }
 }

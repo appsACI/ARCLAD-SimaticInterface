@@ -26,6 +26,7 @@ namespace SimaticArcorWebApi.Model.Custom
         public string OrdenVenta { get; set; }
         public string MadeInColombia { get; set; }
         public string InternalItem { get; set; }
+        public string memo { get; set; }
         public ProductionRequestParameters[] Parameters { get; set; }
         public ProductionRequestOperations[] Operations { get; set; }
         public ParametersRollosClientes[] ParametersRollosClientes { get; set; }

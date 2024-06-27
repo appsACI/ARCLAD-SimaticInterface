@@ -9,7 +9,7 @@ namespace SimaticArcorWebApi.Management
 {
     public interface IWorkOrderCompletionService
     {
-        Task CreateWoCompletionAsync(WorkOrderCompletionModel woCompletion);
-
+        Task CreateWoCompletionAsync(WorkOrderCompletionModel woCompletion, CancellationToken ct);
+       
     }
 }

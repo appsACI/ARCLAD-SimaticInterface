@@ -286,7 +286,7 @@ namespace SimaticArcorWebApi.Management
                                         TagPtlote = item,
                                         TagPtmadeincolombia = " ",
                                         TagPtoperario = req.Operario,
-                                        TagPtordendeproduccion = workOrder.Count >=1 ? workOrder[0].PropertyValue : "",
+                                        TagPtordendeproduccion = workOrder.Count >= 1 ? workOrder[0].PropertyValue : "",
                                         TagPtpesoaproximado = " ",
                                         TagPtqr = " ",
                                         TagPtreferencia = " ",
@@ -3225,9 +3225,12 @@ namespace SimaticArcorWebApi.Management
 
             if (req.PrintOperation == "Other")
             {
-                Material mat = await SimaticMaterialService.GetMaterialByNIdAsync(req.LabelTagsOther.TagPtcidmaterial, false, true, ct);
+                MaterialTrackingUnit mtu = await SimaticMTUService.GetMTUAsync(req.LabelTagsOther.TagPtcrollo, ct);
+
+                Material mat = await SimaticMaterialService.GetMaterialByNIdAsync(mtu.MaterialNId, false, true, ct);
 
                 req.LabelTagsOther.TagPtcdescripcion = mat.Name;
+                req.LabelTagsOther.TagPtcidmaterial = mat.NId;
 
                 List<TagModel> TagModelList = new List<TagModel>() { };
                 TagModel model = null;

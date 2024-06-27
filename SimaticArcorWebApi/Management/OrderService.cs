@@ -43,21 +43,35 @@ namespace SimaticArcorWebApi.Management
             SimaticBOMService = simaticBOMService;
         }
 
-        public static string[] ExtractMaterials(string input)
+        public static List<MaterialReproceso> ExtractMaterials(string input)
         {
             // Eliminar la parte "MP:" del string
             string materialsPart = input.Substring(3);
 
+            List<MaterialReproceso> materiales = new List<MaterialReproceso>();
             // Dividir el string por el carácter ';' para obtener los materiales
             string[] materialsArray = materialsPart.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
 
-            // Eliminar espacios en blanco de cada material
-            for (int i = 0; i < materialsArray.Length; i++)
+            foreach (string item in materialsArray)
             {
-                materialsArray[i] = materialsArray[i].Trim();
+                string trimmedItem = item.Trim();
+
+                // Dividir el item por " por " para separar material y cantidad
+                string[] parts = trimmedItem.Split(new string[] { " por " }, StringSplitOptions.None);
+
+                if (parts.Length == 2)
+                {
+                    MaterialReproceso mat = new MaterialReproceso();
+                    QuantityReproceso cant = new QuantityReproceso();
+                    cant.UoMNId = "m2";
+                    cant.QuantityValue = int.Parse(parts[1].Trim());
+                    mat.Material = parts[0].Trim();
+                    mat.Quantity = cant;
+                    materiales.Add(mat);
+                }
             }
 
-            return materialsArray;
+            return materiales;
         }
 
 
@@ -799,18 +813,18 @@ namespace SimaticArcorWebApi.Management
                 List<OrderOperationMaterialRequirement> orderMaterialesToAddReproceso = new List<OrderOperationMaterialRequirement>();
                 string workOrderOperationId = woOperationsReproceso[0].Id; //CUIDADO
                 string orderOperationId = orderOperationsReproceso[0].Id;
-                string[] materialesReproceso = ExtractMaterials(prod.ARObservaciones);
-                logger.LogInformation($"Tiene {materialesReproceso.Length} materiales para reproceso");
+                List<MaterialReproceso> materialesReproceso = ExtractMaterials(prod.memo);
+                logger.LogInformation($"Tiene {materialesReproceso.Count} materiales para reproceso");
                 WorkOrderOperationMaterialRequirement womaterialToAdd = new WorkOrderOperationMaterialRequirement();
                 OrderOperationMaterialRequirement materialToAdd = new OrderOperationMaterialRequirement();
-                var cantidad = new QuantityReproceso { QuantityValue = 0, UoMNId = "m2" };
+                //var cantidad = new QuantityReproceso { QuantityValue = 0, UoMNId = "m2" };
                 int sequence = 0;
-                foreach (string m in materialesReproceso)
+                foreach (MaterialReproceso m in materialesReproceso)
                 {
                     womaterialToAdd = new WorkOrderOperationMaterialRequirement
                     {
-                        MaterialNId = m,
-                        Quantity = cantidad,
+                        MaterialNId = m.Material,
+                        Quantity = m.Quantity,
                         Sequence = sequence,
                         MaterialRevision = "1",
                         EquipmentNId = ""
@@ -819,8 +833,8 @@ namespace SimaticArcorWebApi.Management
 
                     materialToAdd = new OrderOperationMaterialRequirement
                     {
-                        MaterialNId = m,
-                        Quantity = cantidad,
+                        MaterialNId = m.Material,
+                        Quantity = m.Quantity,
                         Sequence = sequence,
                         MaterialRevision = "1",
                         

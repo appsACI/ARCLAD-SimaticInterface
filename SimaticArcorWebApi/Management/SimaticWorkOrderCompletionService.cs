@@ -18,6 +18,7 @@ using SimaticArcorWebApi.Helpers;
 using SimaticArcorWebApi.HttpClient;
 using SimaticArcorWebApi.Model.Custom.WorkOrderCompletion;
 using SimaticArcorWebApi.Model.Simatic;
+using SimaticWebApi.Model.Custom.ProductionTime;
 using SimaticWebApi.Modules.oauth1;
 
 
@@ -38,23 +39,74 @@ namespace SimaticArcorWebApi.Management
 
         public IUOMService UomService { get; set; }
 
+        public ISimaticOrderService OrderService { get; set; }
+
+
         #region Constructor
         /// <summary>
         /// Initializes a new instance of the <see cref="SimaticWorkOrderCompletionService"/> class.
         /// </summary>
-        public SimaticWorkOrderCompletionService(ISimaticService simatic, IUOMService uomService)
+        public SimaticWorkOrderCompletionService(ISimaticService simatic, IUOMService uomService, ISimaticOrderService orderService)
         {
             if (logger == null) logger = ApplicationLogging.CreateLogger<SimaticWorkOrderCompletionService>();
 
             SimaticService = simatic;
             UomService = uomService;
+            OrderService = orderService;
         }
         #endregion
 
+        public async Task<dynamic> GetProductionTimeAsync(string WorkOrderId, CancellationToken token)
+        {
+
+            using (var client = new AuditableHttpClient(logger))
+            {
+                client.BaseAddress = new Uri(SimaticService.GetUrl());
+
+                // We want the response to be JSON.
+                client.DefaultRequestHeaders.Accept.Clear();
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                // Add the Authorization header with the AccessToken.
+                client.DefaultRequestHeaders.Add("Authorization", "Bearer " + await SimaticService.GetAccessToken(token));
+
+                var url = $"sit-svc/Application/FBLMS/odata/vTiemposProduccion?$filter=Orden eq '{WorkOrderId}' and Estado eq 'Productivo'";
+
+                HttpResponseMessage response = await client.GetAsync(url, token);
+
+                SimaticServerHelper.CheckFaultResponse(token, response, logger);
+
+                return await response.Content.ReadAsStringAsync()
+                    .ContinueWith(task =>
+                    {
+                        var result = JsonConvert.DeserializeObject<dynamic>(task.Result);
+
+                        if (result.value.Count >= 1)
+                        {
+                            logger.LogInformation($"Tiempos de produccion {result}");
+                            return (IList<ProductionTime>)result.value.ToObject<ProductionTime[]>();
+                            //return "";
+                        }
+                        dynamic errorMessage = new { Error = "Work Order not found." };
+                        throw new SimaticApiException(Nancy.HttpStatusCode.NotFound, errorMessage);
+                    }, token);
+            }
+        }
+
         #region Interface Implementation
 
-        public async Task<string> CreateWoCompletionAsync(WorkOrderCompletionModel woCompletion)
+        public async Task<string> CreateWoCompletionAsync(WorkOrderCompletionModel woCompletion, CancellationToken ct)
         {
+            var infoWO = await OrderService.GetOrderByNameAsync(woCompletion.woChildrenId.ToString(), ct);
+
+            var p = await GetProductionTimeAsync(infoWO.NId, ct);
+            if (p.length > 0)
+            {
+                logger.LogInformation($"Adding operation time to payload");
+                woCompletion.startTime = p[0].StartTime;
+                woCompletion.endTime = p[0].EndTime;
+            }
+            logger.LogInformation($"Datos a enviar a netsuit {woCompletion}");
             if (!woCompletion.isbackflush)
             {
                 using (var client = new AuditableHttpClient(logger))
@@ -86,7 +138,7 @@ namespace SimaticArcorWebApi.Management
 
                     // Build up the data to POST.
 
-                    var jsonBackFlush = JsonConvert.SerializeObject(new 
+                    var jsonBackFlush = JsonConvert.SerializeObject(new
                     {
                         woChildrenId = woCompletion.woChildrenId,
                         location = woCompletion.location,
@@ -109,7 +161,7 @@ namespace SimaticArcorWebApi.Management
                     });
 
 
-                    logger.LogInformation($"payload: [{jsonBackFlush }] " );
+                    logger.LogInformation($"payload: [{jsonBackFlush }] ");
 
 
                     var response = await client.PostAsync(URL, new StringContent(jsonBackFlush, Encoding.UTF8, "application/json")).ConfigureAwait(true);
@@ -130,6 +182,18 @@ namespace SimaticArcorWebApi.Management
             {
                 client.BaseAddress = new Uri(SimaticService.GetUrl());
 
+                string name = Convert.ToString(woCompletion.woChildrenId);
+
+                var infoWO = await OrderService.GetOrderByNameAsync(name, ct);
+
+                var p = await GetProductionTimeAsync(infoWO.NId, ct);
+                if (p.length > 0)
+                {
+                    logger.LogInformation($"Adding operation time to payload");
+                    woCompletion.startTime = p[0].StartTime;
+                    woCompletion.endTime = p[0].EndTime;
+                }
+                logger.LogInformation($"Datos a enviar a netsuit {woCompletion}");
                 var URL = "https://5842241-sb1.restlets.api.netsuite.com/app/site/hosting/restlet.nl?script=customscript_bit_rl_work_order_completio&deploy=customdeploy_bit_rl_work_order_completio";
 
                 // We want the response to be JSON.
@@ -253,5 +317,7 @@ namespace SimaticArcorWebApi.Management
 
         #endregion
 
+
     }
+
 }

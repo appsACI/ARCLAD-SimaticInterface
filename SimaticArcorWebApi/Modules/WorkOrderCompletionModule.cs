@@ -57,9 +57,11 @@ namespace SimaticArcorWebApi.Modules
             });
 
             Post("/", CreateWoCompletionAsync, name: "CreateWoCompletion");
+            
 
             Post("/woCompletionConsumo", CreateWoCompletionConsumoAsync, name: "CreateWoCompletionConsumo");
         }
+
 
         #region Post
 
@@ -67,6 +69,7 @@ namespace SimaticArcorWebApi.Modules
         {
             try
             {
+                //var p = GetProductionTimeAsync("WOCO00172", ct);
                 if (config.EnableRequestLogging)
                 {
                     logger.LogInformation($"Body:{RequestStream.FromStream(Request.Body).AsString()}");
@@ -85,7 +88,7 @@ namespace SimaticArcorWebApi.Modules
 
                 CancellationTokenSource tokenSource = new CancellationTokenSource();
 
-                await WoCService.CreateWoCompletionAsync(prod);
+                await WoCService.CreateWoCompletionAsync(prod, ct);
                 return Negotiate.WithStatusCode(HttpStatusCode.Created);
             }
             catch (SimaticApiException e)
