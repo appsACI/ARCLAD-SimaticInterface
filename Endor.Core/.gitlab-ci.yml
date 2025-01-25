@@ -1,0 +1,15 @@
+stages:
+  - build
+
+build:
+  before_script: 
+    - export http_proxy="$CODE_PROXY"
+    - export https_proxy="$CODE_PROXY"
+    - export no_proxy="127.0.0.1,localhost,.siemens.de,.siemens.net,.siemens.com,.siemens.io"
+    - export HTTP_PROXY="$http_proxy"
+    - export HTTPS_PROXY="$http_proxy"
+    - export NO_PROXY="$no_proxy" 
+  image: microsoft/dotnet:latest
+  stage: build
+  script:
+    - dotnet build Endor.Core.csproj

@@ -1,0 +1,75 @@
+﻿using SimaticArcorWebApi.Model.Simatic.Order;
+using System;
+
+namespace SimaticArcorWebApi.Model.Custom.WorkOrderCompletion
+{
+    public class WorkOrderCompletionVinilosModel
+    {
+        public int woChildrenId { get; set; }
+        public string location { get; set; }
+        public DateTime publishedDate { get; set; }
+        public string startTime { get; set; }
+        public string endTime { get; set; }
+        public int production { get; set; }
+        public decimal? quantity { get; set; }
+        public int startOperation { get; set; }
+        public int endOperation { get; set; }
+        public string memo { get; set; }
+        public int employee { get; set; }
+        public bool completed { get; set; }
+        public bool flagTrim { get; set; }
+        public bool isbackflush { get; set; }
+        public int employeeComplement { get; set; }
+        public DetailsForWorkOrderCompletionVinilos[] detail { get; set; }
+        public MaterialConsumedActualForWorkOrderCompletionVinilos[] materialConsumedActual { get; set; }
+        public ScrapForWorkOrderCompletionVinilos[] scrap { get; set; }
+
+    }
+
+    public class DetailsForWorkOrderCompletionVinilos
+    {
+        public string lotnumber { get; set; }
+        public string binnumber { get; set; }
+        public decimal? quantity { get; set; }
+        public string versionLote { get; set; }
+        public string width { get; set; }
+        public string length { get; set; }
+        public string trueLength { get; set; }
+        public string parentLot { get; set; }
+        public string bom { get; set; }
+        public DateTime expirationDate { get; set; }
+        public string memo { get; set; }
+        public string empates { get; set; } = "0";
+    }
+
+    public class MaterialConsumedActualForWorkOrderCompletionVinilos
+    {
+        public string materialDefinitionId { get; set; }
+        public string length { get; set; }
+        public string width { get; set; }
+        public decimal? quantity { get; set; }
+        public InventoryForWorkOrderCompletionVinilos[] inventory { get; set; }
+    }
+
+    public class InventoryForWorkOrderCompletionVinilos
+    {
+        public string materialLotId { get; set; }
+        public string materialLotStatus { get; set; }
+        public decimal? quantity { get; set; }
+        public string binnumber { get; set; }
+    }
+
+    public class ScrapForWorkOrderCompletionVinilos
+    {
+        public decimal? quantityScrap { get; set; }
+        public string width { get; set; }
+        public string length { get; set; }
+        public string conceptScrap { get; set; }
+    }
+
+
+}
+
+
+
+
