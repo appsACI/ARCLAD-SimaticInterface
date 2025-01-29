@@ -251,7 +251,7 @@ namespace SimaticArcorWebApi.Management
         public async Task DescountQuantity(MTUDescount req, CancellationToken ct)
         {
 
-            logger.LogInformation($"Updating lot: Id [{req.MtuInfo[0].MtuNId}], Quantity [{req.MtuInfo[0].Quantity}].");
+            logger.LogInformation($"Updating lot descount: Id [{req.MtuInfo[0].MtuNId}], Quantity [{req.MtuInfo[0].Quantity}].");
 
             //Get Material by ID
             MTUAsignedArray[] mtuAsigned = await SimaticMTUService.GetMTUAsigned(req.WorkOrderNId, req.OperationId, ct);
@@ -303,7 +303,7 @@ namespace SimaticArcorWebApi.Management
 
                                 if (restQuantity <= 0)
                                 {
-                                    logger.LogInformation($"Updating MTU and lot quantity id [{mtu.NId}] old value [{mtu.Quantity.QuantityValue}] new value [{req.MtuInfo[0].Quantity}] final value [{restQuantity}]");
+                                    logger.LogInformation($"Updating MTU and lot quantity id [{mtu.NId}] old value [{mtu.Quantity.QuantityValue}] [-] new value [{req.MtuInfo[0].Quantity}] = [{restQuantity}]");
                                     await SimaticMTUService.SetMaterialTrackingUnitQuantity(mtu.Id, mtu.Quantity.UoMNId, 0, ct);
                                     mtu.Quantity.QuantityValue = Convert.ToDouble(restQuantity);
                                     await SimaticMTUService.SetMaterialLotQuantity(mlot.Id, mtu.Quantity.UoMNId, 0, ct);
@@ -312,11 +312,11 @@ namespace SimaticArcorWebApi.Management
                                 else
                                 {
 
-                                    logger.LogInformation($"Updating MTU quantity id [{mtu.NId}] old value [{mtu.Quantity.QuantityValue}] new value [{req.MtuInfo[0].Quantity}] total value [{restQuantity}]");
+                                    logger.LogInformation($"Updating MTU quantity id [{mtu.NId}] old value [{mtu.Quantity.QuantityValue}] [-] new value [{req.MtuInfo[0].Quantity}] [=] [{restQuantity}]");
                                     await SimaticMTUService.SetMaterialTrackingUnitQuantity(mtu.Id, mtu.Quantity.UoMNId, Convert.ToDouble(restQuantity), ct);
                                     mtu.Quantity.QuantityValue = Convert.ToDouble(restQuantity);
 
-                                    logger.LogInformation($"Updating material Lot id [{mtu.NId}] old value [{mlot.Quantity.QuantityValue}] new value [{req.MtuInfo[0].Quantity}] total value [{restQuantity}]");
+                                    logger.LogInformation($"Updating material Lot id [{mtu.NId}] old value [{mlot.Quantity.QuantityValue}] [-] new value [{req.MtuInfo[0].Quantity}] [=] [{restQuantity}]");
                                     await SimaticMTUService.SetMaterialLotQuantity(mlot.Id, mtu.Quantity.UoMNId, Convert.ToDouble(restQuantity), ct);
                                 }
 
@@ -4408,12 +4408,12 @@ namespace SimaticArcorWebApi.Management
         private static string removeDecimalIfZero(string dato)
         {
             string[] decimales = dato.Split(".");
-            int valorDecimal = Int32.Parse(decimales[decimales.Length - 1]);
-            if (valorDecimal == 0)
+            if (decimales[decimales.Length - 1].StartsWith("0"))
             {
                 return decimales[0];
             }
-            if (decimales[decimales.Length - 1].StartsWith("00"))
+            var valorDecimal = long.Parse(decimales[decimales.Length - 1]);
+            if (valorDecimal == 0)
             {
                 return decimales[0];
             }

@@ -692,6 +692,39 @@ namespace SimaticArcorWebApi.Management
             }
         }
 
+        public async Task<dynamic> GetWorkOrderOperationBySequenceAsync(string secuence, CancellationToken token)
+        {
+            using (var client = new AuditableHttpClient(logger))
+            {
+                client.BaseAddress = new Uri(SimaticService.GetUrl());
+
+                // We want the response to be JSON.
+                client.DefaultRequestHeaders.Accept.Clear();
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                // Add the Authorization header with the AccessToken.
+                client.DefaultRequestHeaders.Add("Authorization", "Bearer " + await SimaticService.GetAccessToken(token));
+
+                var url = $"sit-svc/application/PICore/odata/WorkOrderOperation?$filter=Sequence eq {secuence}";
+
+                HttpResponseMessage response = await client.GetAsync(url, token);
+
+                SimaticServerHelper.CheckFaultResponse(token, response, logger);
+
+                return await response.Content.ReadAsStringAsync()
+                    .ContinueWith(task =>
+                    {
+                        var result = JsonConvert.DeserializeObject<dynamic>(task.Result);
+
+                        if (result.value.Count >= 1)
+                            return ((IList<WorkOrderOperation>)result.value.ToObject<WorkOrderOperation[]>()).First();
+
+                        dynamic errorMessage = new { Error = "Work Order not found." };
+                        throw new SimaticApiException(Nancy.HttpStatusCode.NotFound, errorMessage);
+                    }, token);
+            }
+        }
+
         public async Task<dynamic> GetOrderOperationAsync(Guid WorkOrderId, CancellationToken token)
         {
             using (var client = new AuditableHttpClient(logger))

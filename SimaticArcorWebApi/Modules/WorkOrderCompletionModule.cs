@@ -158,11 +158,9 @@ namespace SimaticArcorWebApi.Modules
                     return Negotiate.WithStatusCode(HttpStatusCode.BadRequest).WithModel(this.ModelValidationResult.FormattedErrors);
                 }
 
-
-
                 CancellationTokenSource tokenSource = new CancellationTokenSource();
 
-                string WoResponse= await WoCCService.CreateWoCompletionConsumoAsync(prod);
+                string WoResponse= await WoCCService.CreateWoCompletionConsumoAsync(prod,ct);
                 return await Negotiate.WithStatusCode(HttpStatusCode.OK).WithModel(WoResponse);
 
             }
