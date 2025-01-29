@@ -362,19 +362,7 @@ namespace SimaticArcorWebApi.Management
                             }
                             if (prop.NId == "ancho")
                             {
-                                if (prop.PropertyValue == "")
-                                {
-                                    if (prop.NId.Contains("Medidas"))
-                                    {
-                                        var medidaAncho = prop.PropertyValue.Split("X")[0];
-                                        ancho = medidaAncho;
-                                    }
-                                }
-                                else
-                                {
-
-                                    ancho = prop.PropertyValue;
-                                }
+                                ancho = prop.PropertyValue;
                             }
                             if (prop.NId == "contadorTanda")
                             {
@@ -382,6 +370,14 @@ namespace SimaticArcorWebApi.Management
                                 tanda = numero < 10 ? "0" + prop.PropertyValue : prop.PropertyValue;
                             }
 
+                            if (ancho == "")
+                            {
+                                if (prop.NId.Contains("Medidas"))
+                                {
+                                    var medidaAncho = prop.PropertyValue.Split("X")[0];
+                                    ancho = medidaAncho;
+                                }
+                            }
                         }
                         MaterialTrackingUnitProperty workOrder = await SimaticMTUService.GetPropertyWorkOrder(item, ct);
                         IList<MTUPropiedadesDefectos> defectos = await GetPropertiesDefectos(item, ct);
