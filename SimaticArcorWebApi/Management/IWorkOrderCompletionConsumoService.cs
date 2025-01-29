@@ -9,6 +9,6 @@ namespace SimaticArcorWebApi.Management
 {
     public interface IWorkOrderCompletionConsumoService
     {
-        Task<dynamic> CreateWoCompletionConsumoAsync(WorkOrderCompletionConsumoModel woCompletionConsumo);
+        Task<dynamic> CreateWoCompletionConsumoAsync(WorkOrderCompletionConsumoModel prod, CancellationToken ct);
     }
 }

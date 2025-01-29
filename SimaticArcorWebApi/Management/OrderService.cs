@@ -624,7 +624,7 @@ namespace SimaticArcorWebApi.Management
 
                         oEquReqCorte = new IOOrderOperationEquipmentRequirements
                         {
-                            EquipmentNId = "S01",
+                            EquipmentNId = prod.Location.StartsWith("02") ? "S01" : "S02",
                             Sequence = "0"
                         };
 
