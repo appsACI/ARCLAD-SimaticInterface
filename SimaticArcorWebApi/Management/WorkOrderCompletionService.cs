@@ -158,9 +158,27 @@ namespace SimaticArcorWebApi.Management
 
             #region TRANSACTIONAL LOG
 
-            JObject res = JObject.Parse(woId);
+            
+            JArray resTemp;
 
-            logger.LogInformation($"JSON : '{res}'");
+            try
+            {
+                JToken token = JToken.Parse((string)woId);
+                resTemp = token is JArray array ? array : new JArray(token);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError($"Error parsing woId: {ex.Message}");
+                resTemp = new JArray(); // En caso de error, asigna un array vacío
+            }
+
+            logger.LogInformation($"JSON : '{resTemp}'");
+
+            JObject res = new JObject();
+
+            if (resTemp.Count > 0) {
+                res = (JObject) resTemp[0];
+            }
 
             var lotes = string.Join("| ", prod.detail.Select(i => i.lotnumber));
 
@@ -178,7 +196,7 @@ namespace SimaticArcorWebApi.Management
                 Cortes = "",
                 Payload = prod.ToString(),
             };
-            
+
 
             newlog.ErrorMessage = res.ToString();
             newlog.ReasonStatus = res["error"]?["message"]?.ToString() != null ? res["error"]?["message"]?.ToString() : "Message Vacio";
@@ -291,9 +309,29 @@ namespace SimaticArcorWebApi.Management
             var woId = await SimaticWorkOrderCompletionService.CreateWoCompletionVinilosAsync(prod, ct);
 
             #region TRANSACTIONAL LOG
-            JObject res = JObject.Parse(woId);
 
-            logger.LogInformation($"JSON : '{res}'");
+
+            JArray resTemp;
+
+            try
+            {
+                JToken token = JToken.Parse((string)woId);
+                resTemp = token is JArray array ? array : new JArray(token);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError($"Error parsing woId: {ex.Message}");
+                resTemp = new JArray(); // En caso de error, asigna un array vacío
+            }
+
+            logger.LogInformation($"JSON : '{resTemp}'");
+
+            JObject res = new JObject();
+
+            if (resTemp.Count > 0)
+            {
+                res = (JObject)resTemp[0];
+            }
 
             var lotes = string.Join("| ", prod.detail.Select(i => i.lotnumber));
 
