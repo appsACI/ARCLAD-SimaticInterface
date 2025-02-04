@@ -8,3 +8,6 @@
 /SimaticArcorWebApi/obj
 /SimaticArcorWebApiTest/obj
 /SimaticArcorWebApi/bin
+/SimaticArcorWebApi/appsettings.arcloud-pdr.json
+/SimaticArcorWebApi/appsettings.arcloud-development.json
+/SimaticArcorWebApi/appsettings.json
