@@ -1177,7 +1177,7 @@ namespace SimaticArcorWebApi.Management
             IList<WorkOrderOperationParameterSpecification> parametersSpecification = new List<WorkOrderOperationParameterSpecification>();
             WorkOrderOperationParameterSpecification parameterSpecification = new WorkOrderOperationParameterSpecification();
 
-            logger.LogInformation($"A new Order Operation data is received, analysing Order ID [{parameterId}] WorkOrder [{parameterId}] for Final Material [{parameterId}] ...");
+            logger.LogInformation($"update counter trim [{parameterId}] ...");
 
             if (!string.IsNullOrEmpty(parameterId))
             {

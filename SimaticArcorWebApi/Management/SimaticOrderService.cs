@@ -1522,9 +1522,6 @@ namespace SimaticArcorWebApi.Management
                 var response = await client.PostAsync("sit-svc/Application/PICore/odata/UpdateWorkOrderOperationParameterRequirement",
                   new StringContent(json, Encoding.UTF8, "application/json"), token).ConfigureAwait(true);
 
-                //var response = await client.PostAsync("http://arcloud-opc/sit-svc/Application/PICore/odata/UpdateWorkOrderExtendedV2",
-                //  new StringContent(json, Encoding.UTF8, "application/json"), token).ConfigureAwait(true);
-
                 SimaticServerHelper.CheckFaultResponse(token, response, logger);
 
                 await response.Content.ReadAsStringAsync();
