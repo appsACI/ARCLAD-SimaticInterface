@@ -180,13 +180,23 @@ namespace SimaticArcorWebApi.Management
                 res = (JObject) resTemp[0];
             }
 
+            string maquina = "";
+
+            if (prod.detail.Length > 0)
+            {
+                maquina = prod.detail[0]?.binnumber;
+            }
+            else {
+                maquina = prod.materialConsumedActual[0]?.inventory[0]?.binnumber;
+            }
+
             var lotes = string.Join("| ", prod.detail.Select(i => i.lotnumber));
 
             var newlog = new TransactionalLogModel
             {
                 Planta = prod.location,
                 Proceso = infoWOrderOp.Name,
-                Maquina = prod.detail[0]?.binnumber ?? prod.materialConsumedActual[0]?.inventory[0]?.binnumber,
+                Maquina = maquina,
                 Tipo = "COMPLETION",
                 WorkOrders = infoWOrder.NId,
                 Lotes = lotes,
@@ -194,7 +204,7 @@ namespace SimaticArcorWebApi.Management
                 Trim = "",
                 NTrim = "",
                 Cortes = "",
-                Payload = prod.ToString(),
+                Payload = JsonConvert.SerializeObject(prod).ToString(),
             };
 
 
@@ -202,8 +212,8 @@ namespace SimaticArcorWebApi.Management
             newlog.ReasonStatus = res["error"]?["message"]?.ToString() != null ? res["error"]?["message"]?.ToString() : "Message Vacio";
             newlog.Succeced = res["isSuccess"]?.ToString() != null ? res["isSuccess"]?.ToString() : "False";
             newlog.Comando = "CreateWoCompletionAsync";
-            newlog.ProgramaFuente = "NETSUITE";
-            newlog.ProgramaDestino = "OPCENTER";
+            newlog.ProgramaFuente = "OPCENTER";
+            newlog.ProgramaDestino = "NETSUITE";
             newlog.URL = this.UrlBase + this.nsURL;
             await TransactionalLogService.CreateTLog(newlog, ct);
             #endregion
@@ -335,11 +345,22 @@ namespace SimaticArcorWebApi.Management
 
             var lotes = string.Join("| ", prod.detail.Select(i => i.lotnumber));
 
+            string maquina = "";
+
+            if (prod.detail.Length > 0)
+            {
+                maquina = prod.detail[0]?.binnumber;
+            }
+            else
+            {
+                maquina = prod.materialConsumedActual[0]?.inventory[0]?.binnumber;
+            }
+
             var newlog = new TransactionalLogModel
             {
                 Planta = prod.location,
                 Proceso = infoWOrderOp.Name,
-                Maquina = prod.detail[0]?.binnumber ?? prod.materialConsumedActual[0]?.inventory[0]?.binnumber,
+                Maquina = maquina,
                 Tipo = "COMPLETION",
                 WorkOrders = infoWOrder.NId,
                 Lotes = lotes,
@@ -347,7 +368,7 @@ namespace SimaticArcorWebApi.Management
                 Trim = "",
                 NTrim = "",
                 Cortes = "",
-                Payload = prod.ToString(),
+                Payload = JsonConvert.SerializeObject(prod).ToString(),
             };
 
 
@@ -355,8 +376,8 @@ namespace SimaticArcorWebApi.Management
             newlog.ReasonStatus = res["error"]?["message"]?.ToString() != null ? res["error"]?["message"]?.ToString() : "Message Vacio";
             newlog.Succeced = res["isSuccess"]?.ToString() != null ? res["isSuccess"]?.ToString() : "False";
             newlog.Comando = "CreateWoCompletionAsync";
-            newlog.ProgramaFuente = "NETSUITE";
-            newlog.ProgramaDestino = "OPCENTER";
+            newlog.ProgramaFuente = "OPCENTER";
+            newlog.ProgramaDestino = "NETSUITE";
             newlog.URL = this.UrlBase + this.nsURL;
             await TransactionalLogService.CreateTLog(newlog, ct);
             #endregion

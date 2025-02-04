@@ -19,6 +19,7 @@ using SimaticWebApi.Management;
 using Endor.Core;
 using SimaticArcorWebApi.Model.Custom;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 
 namespace SimaticArcorWebApi.Management
 {
@@ -115,7 +116,7 @@ namespace SimaticArcorWebApi.Management
                 Trim = "",
                 NTrim = "",
                 Cortes = "",
-                Payload = prod.ToString(),
+                Payload = JsonConvert.SerializeObject(prod).ToString(),
             };
 
 
@@ -123,8 +124,8 @@ namespace SimaticArcorWebApi.Management
             newlog.ReasonStatus = res["error"]?["message"]?.ToString() != null ? res["error"]?["message"]?.ToString() : "Message Vacio";
             newlog.Succeced = res["isSuccess"]?.ToString() != null ? res["isSuccess"]?.ToString() : "False";
             newlog.Comando = "CreateWoCompletionAsync";
-            newlog.ProgramaFuente = "NETSUITE";
-            newlog.ProgramaDestino = "OPCENTER";
+            newlog.ProgramaFuente = "OPCENTER";
+            newlog.ProgramaDestino = "NETSUITE";
             newlog.URL = this.UrlBase + this.nsURL;
             await TransactionalLogService.CreateTLog(newlog, ct);
 
