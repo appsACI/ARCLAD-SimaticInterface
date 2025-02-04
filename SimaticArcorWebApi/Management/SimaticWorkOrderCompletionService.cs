@@ -176,9 +176,9 @@ namespace SimaticArcorWebApi.Management
 
                     });
 
-                    logger.LogInformation($"payload: [{jsonBackFlush }] ");
-
+                    logger.LogInformation($"payload backflush: [{jsonBackFlush }] ");
                     var response = await client.PostAsync(this.UrlBase + this.nsURL, new StringContent(jsonBackFlush, Encoding.UTF8, "application/json")).ConfigureAwait(true);
+
 
                     return await response.Content.ReadAsStringAsync()
                       .ContinueWith(task =>
@@ -192,8 +192,6 @@ namespace SimaticArcorWebApi.Management
             using (var client = new AuditableHttpClient(logger))
             {
                 client.BaseAddress = new Uri(SimaticService.GetUrl());
-
-                var URL = "https://5842241-sb1.restlets.api.netsuite.com/app/site/hosting/restlet.nl?script=customscript_bit_rl_work_order_completio&deploy=customdeploy_bit_rl_work_order_completio";
 
                 // We want the response to be JSON.
                 client.DefaultRequestHeaders.Accept.Clear();
