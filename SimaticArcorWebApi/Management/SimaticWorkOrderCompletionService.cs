@@ -178,7 +178,6 @@ namespace SimaticArcorWebApi.Management
 
                     logger.LogInformation($"payload: [{jsonBackFlush }] ");
 
-                    var response = await client.PostAsync(this.UrlBase + this.nsURL, new StringContent(jsonBackFlush, Encoding.UTF8, "application/json")).ConfigureAwait(true);
 
                     return await response.Content.ReadAsStringAsync()
                       .ContinueWith(task =>
