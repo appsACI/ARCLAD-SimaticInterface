@@ -1286,6 +1286,27 @@ namespace SimaticArcorWebApi.Management
 
                 }
 
+                if (!string.IsNullOrEmpty(req.LabelTagsMezclas.TagFecha_fab))
+                {
+                    model = new TagModel
+                    {
+                        TagName = "Fecha_fab",
+                        TagValue = req.LabelTagsMezclas.TagFecha_fab
+                    };
+                    TagModelList.Add(model);
+
+                }
+                else
+                {
+                    model = new TagModel
+                    {
+                        TagName = "Fecha_fab",
+                        TagValue = ""
+                    };
+                    TagModelList.Add(model);
+
+                }
+
                 logger.LogInformation($"lista de tags: {TagModelList.ToArray()}");
 
 
