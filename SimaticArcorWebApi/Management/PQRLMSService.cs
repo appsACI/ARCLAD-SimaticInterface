@@ -42,7 +42,7 @@ namespace SimaticArcorWebApi.Management
         {
             string verb = "CreateOrdenOperation";
 
-            logger.LogInformation($"A new Order Operation data is received, analysing Order ID [{prod.Title}] WorkOrder [{prod.Title}] for Final Material [{prod.Title}] ...");
+            logger.LogInformation($"PQR recibed[{prod.Title}]...");
 
             if (!string.IsNullOrEmpty(prod.Title))
             {
@@ -54,7 +54,6 @@ namespace SimaticArcorWebApi.Management
                     response = respo.isSuccess.ToObject<bool>() ? respo.data.ToObject<IncommingMessage>() : null
                 };
 
-                logger.LogInformation($"Order completion [{prod.Title}] send successfully, the response is: '{respo}'");
                 logger.LogInformation($"RespondePqr '{response}'");
 
                 return response;

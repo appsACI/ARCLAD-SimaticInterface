@@ -83,8 +83,6 @@ namespace SimaticArcorWebApi.Management
             {
                 client.BaseAddress = new Uri(SimaticService.GetUrl());
 
-                //var URL = "https://5842241-sb1.restlets.api.netsuite.com/app/site/hosting/restlet.nl?script=customscript_ar_create_case&deploy=customdeploy_ar_create_case";
-
                 // We want the response to be JSON.
                 client.DefaultRequestHeaders.Accept.Clear();
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
@@ -101,7 +99,6 @@ namespace SimaticArcorWebApi.Management
 
                 // Generar la firma OAuth
                 var oauthInfo = oauthParams.GenerateOAuth();
-
 
                 // Add the Authorization header with the AccessToken.
                 client.DefaultRequestHeaders.Add("Authorization", oauthInfo.ToString());

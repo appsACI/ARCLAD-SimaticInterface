@@ -51,6 +51,7 @@ namespace SimaticWebApi.Model.Custom.PrintLabel
         public string TagLote_proveedor { get; set; }
         public string TagMaterial { get; set; }
         public string TagObservaciones { get; set; }
+        public string TagFecha_fab { get; set; }
     }
 
     public class RecubrimientoModel
