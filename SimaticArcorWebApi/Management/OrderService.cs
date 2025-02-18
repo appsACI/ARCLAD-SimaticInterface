@@ -121,12 +121,17 @@ namespace SimaticArcorWebApi.Management
 
             List<string> recreateStatus = new List<string>() { "A", "B" }; // First updatable statuses.
             List<string> changeStatus = new List<string>() { "A", "B", "C" }; // Advance from planed to released for production.
-            List<string> blockedStatus = new List<string>() { "C", "D", "G", "H" }; // Either input data, or actual Order nor WorkOrder in this states cannot be changed or managed here.
-            List<string> cancelableCurrentOrdersStatus = new List<string>() { "A", "B", "D", "C", "Suspendida" }; // Actual Order or WorkOrder status suitable for cancellation.
+            List<string> blockedStatus = new List<string>() { "C", "D", "F", "H" }; // Either input data, or actual Order nor WorkOrder in this states cannot be changed or managed here.
+            List<string> cancelableCurrentOrdersStatus = new List<string>() { "A", "B", "C", "Suspendida" }; // Actual Order or WorkOrder status suitable for cancellation.
 
             logger.LogInformation($"A new Order data is received, analysing Order ID [{prod.Id}] WorkOrder [{prod.WorkOrder}] for Final Material [{prod.AssemblyItem}] ...");
 
             #region -- Pre-Checks --
+            if (prod.Status.ToLower() == "released")
+            {
+                prod.Status = "A";
+            }
+
 
             // Blocked for update, will return an exception to NetSuite!
             if (blockedStatus.Contains(prod.Status) && !changeStatus.Contains(prod.Status))
@@ -135,10 +140,7 @@ namespace SimaticArcorWebApi.Management
                 throw new Exception($"Order Input status [{prod.Status}] is not valid for farther prosessing!");
             }
 
-            if (prod.Status.ToLower() == "released")
-            {
-                prod.Status = "A";
-            }
+            
 
             Material material = await SimaticMaterialService.GetMaterialByNIdAsync(prod.AssemblyItem, false, true, ct);
             if (material == null)
@@ -181,7 +183,7 @@ namespace SimaticArcorWebApi.Management
                 }
 
                 if ((recreateStatus.Contains(prod.Status)
-                  && recreateStatus.Contains(currentOrder.Status.StatusNId)))
+                  && recreateStatus.Contains(currentWorkOrder.Status.StatusNId)))
 
                 {
                     // Order & WorkOrder will be recreated completely!
@@ -189,9 +191,9 @@ namespace SimaticArcorWebApi.Management
                     logger.LogInformation($"Order ID [{prod.Id}] and WorkOrder [{prod.WorkOrder}] will be recreated completely!");
                 }
                 else if (
-                  (((changeStatus.Contains(prod.Status) && changeStatus.Contains(currentOrder.Status.StatusNId) && prod.Status != currentOrder.Status.StatusNId)
+                  (((changeStatus.Contains(prod.Status) && changeStatus.Contains(currentWorkOrder.Status.StatusNId) && prod.Status != currentWorkOrder.Status.StatusNId)
                   || (currentWorkOrder != null && changeStatus.Contains(currentWorkOrder.Status.StatusNId) && prod.Status != currentWorkOrder.Status.StatusNId))
-                  || (cancelableCurrentOrdersStatus.Contains(currentOrder.Status.StatusNId) && (currentWorkOrder != null && cancelableCurrentOrdersStatus.Contains(currentWorkOrder.Status.StatusNId))))
+                  || (cancelableCurrentOrdersStatus.Contains(currentWorkOrder.Status.StatusNId) && (currentWorkOrder != null && cancelableCurrentOrdersStatus.Contains(currentWorkOrder.Status.StatusNId))))
                   //&&(!blockedStatus.Contains(currentOrder.Status.StatusNId) && (currentWorkOrder != null && !blockedStatus.Contains(currentWorkOrder.Status.StatusNId)))
                   )
                 {
@@ -206,7 +208,7 @@ namespace SimaticArcorWebApi.Management
                 }
                 else
                 {
-                    logger.LogWarning($"Order [{prod.Id}] - [{prod.WorkOrder}] status [{currentOrder.Status.StatusNId}] or WorkOrder status [{currentWorkOrder.Status.StatusNId}] did not permit any changes to be made!");
+                    logger.LogWarning($"Order [{prod.Id}] - [{prod.WorkOrder}] WorkOrder status [{currentWorkOrder.Status.StatusNId}] did not permit any changes to be made!");
                     isBlockedForUpdates = true;
                 }
             }
@@ -227,8 +229,8 @@ namespace SimaticArcorWebApi.Management
             if (isBlockedForUpdates && !changeOrderStatus)
             {
                 logger.LogWarning($"Order [{prod.Id}] - [{prod.WorkOrder}] :: Aborting any changes on this Order and WorkOrder!");
-                //throw new Exception($"Order status do not permit any changes! Status: [{prod.Status}]");
-                return;
+                throw new Exception($"Order status actual [{currentWorkOrder.Status.StatusNId}] do not permit any changes!");
+              
             }
 
             // Just change Order & WorkOrder statuses and go away!
@@ -559,7 +561,8 @@ namespace SimaticArcorWebApi.Management
                                     ParameterName = "Trim " + contador,
                                     ParameterType = Char.ToUpperInvariant(p.Type[0]) + p.Type.ToLowerInvariant().Substring(1),
                                     ParameterTargetValue = result,
-
+                                    //ParameterToleranceLow="0",
+                                    //ParameterLimitLow = contador.ToString("D3"),
                                     ParameterUoMNId = p.UoM
                                 };
 
@@ -624,7 +627,7 @@ namespace SimaticArcorWebApi.Management
 
                         oEquReqCorte = new IOOrderOperationEquipmentRequirements
                         {
-                            EquipmentNId = prod.Location.StartsWith("02") ? "S01" : "S02",
+                            EquipmentNId = isReproceso ? prod.Location.StartsWith("02") ? "T02" : "S02" : prod.Location.StartsWith("02") ? "S01" : "S02",
                             Sequence = "0"
                         };
 
@@ -846,8 +849,6 @@ namespace SimaticArcorWebApi.Management
             }
 
             #region CreateMaterialsReproceso
-
-
             if (isReproceso)
             {
                 logger.LogInformation("Es un REPROCESO");
@@ -858,7 +859,7 @@ namespace SimaticArcorWebApi.Management
                 string workOrderOperationId = "";// = woOperationsReproceso[0].Id; //CUIDADO
                 foreach (WorkOrderOperation woOperation in woOperationsReproceso)
                 {
-                    if (woOperation.OperationNId == prod.Operations[0].Name)
+                    if (woOperation.OperationNId.ToLower() == prod.Operations[0].Name.ToLower())
                     {
                         workOrderOperationId = woOperation.Id;
                     }
@@ -866,7 +867,7 @@ namespace SimaticArcorWebApi.Management
                 string orderOperationId = "";// = orderOperationsReproceso[0].Id;
                 foreach (WorkOrderOperation oOperation in orderOperationsReproceso)
                 {
-                    if (oOperation.OperationNId == prod.Operations[0].Name)
+                    if (oOperation.OperationNId.ToLower() == prod.Operations[0].Name.ToLower())
                     {
                         orderOperationId = oOperation.Id;
                     }
@@ -912,82 +913,10 @@ namespace SimaticArcorWebApi.Management
 
             #endregion
 
-            //}
+
             #endregion
 
-            #region -- OLD --
-            //try
-            //{
 
-            //  //    var fields = (IList<OrderUserField>)await SimaticService.GetOrderUserFields(orderId, ct);
-
-            //  //    await CreateOrUpdateUserField(nameof(prod.ExportNbr), prod.ExportNbr, orderId, fields, ct);
-
-            //  //    await CreateOrUpdateUserField(nameof(prod.Line), prod.Line, orderId, fields, ct);
-
-            //  //    await CreateOrUpdateUserField(nameof(prod.ShipmentOrder), prod.ShipmentOrder, orderId, fields, ct);
-
-            //  //    await CreateOrUpdateUserField("Type", prod.FamilyID, orderId, fields, ct);
-
-            //  //    await CreateOrUpdateUserField("Planta", prod.PlantID, orderId, fields, ct);
-
-            //  //    // TODO: modificar estos dos UserFields para que se guarde lo que se manda por la interfaz
-            //  //    await CreateOrUpdateUserField("RoadMapNId", prod.FinalMaterial, orderId, fields, ct);
-
-            //  //    var roadMapType = string.IsNullOrWhiteSpace(prod.RoadMapType) ? "M" : prod.RoadMapType;
-            //  //    await CreateOrUpdateUserField("RoadMapType", roadMapType, orderId, fields, ct);
-
-            //  //    if (currentOrder == null)
-            //  //    {
-            //  //      woId = await SimaticService.CallCreateOrderFromOperationCommand(prod.OrderId,prod.Status, ct);
-            //  //    }
-
-            //  //    IList<WorkOrderUserField> userfields = await SimaticService.GetWorkOrderUserFieldsByID(woId, ct);
-            //  //    await UpdateWorkOrderUserFields(userfields, prod, ct);
-
-            //  //if (!int.TryParse(prod.Status, out var status))
-            //  //      throw new SimaticApiException($"Status field is not a number. Value [{prod.Status}]");
-
-            //  //    if (status == (int)OrderStatusMachine.Active)
-            //  //    {
-            //  //      /*if (!string.IsNullOrEmpty(orderId))
-            //  //        await SimaticService.SetOrderStatus(orderId, "Activate", ct);*/
-            //  //	/*
-            //  //      if (!string.IsNullOrEmpty(woId))
-            //  //        await SimaticService.SetWorkOrderStatus(woId, "Activate", ct);
-            //  //		*/
-            //  //    }
-            //  //    else
-            //  //    {
-            //  //      //SimaticService.SetOrderStatus(orderId, "Activate", ct);
-            //  //    }
-            //}
-            //catch (Exception e)
-            //{
-            //  logger.LogError(e, $"Error creating order. Delete Flag [{creatingFlag}]");
-
-            //  if (creatingFlag)
-            //  {
-            //    //var token = new CancellationToken();
-
-            //    //if (!string.IsNullOrEmpty(woId))
-            //    //{
-            //    //  logger.LogInformation(e, $"Deleting Work Order [{woId}]");
-            //    //  //await SimaticService.DeleteWorkOrder(woId, token);
-            //    //}
-
-            //    //if (!string.IsNullOrEmpty(orderId))
-            //    //{
-            //    //  logger.LogInformation(e, $"Deleting Order [{orderId}]");
-            //    //  //await SimaticService.DeleteOrder(orderId, token);
-            //    //}
-
-            //    //logger.LogInformation(e, $"Create Order Rollback has been completed");
-            //  }
-
-            //  throw;
-            //}
-            #endregion
 
             #endregion
         }

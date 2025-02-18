@@ -96,6 +96,8 @@ namespace SimaticArcorWebApi.Model.Simatic.Order
         public string ParameterTargetValue { get; set; }
         public string ParameterType { get; set; }
         public string ParameterUoMNId { get; set; }
+        //public string ParameterToleranceLow { get; set; }
+        //public string ParameterLimitLow { get; set; } 
     }
 
     //public class IOOrderOperationInventoryDetail
