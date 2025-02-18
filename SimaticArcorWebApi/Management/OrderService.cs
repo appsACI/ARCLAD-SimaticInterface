@@ -60,7 +60,13 @@ namespace SimaticArcorWebApi.Management
             string[] arrayMaterial = material.Split('.');
             Console.WriteLine("array material: " + string.Join(", ", arrayMaterial));
 
-            string anchoStr = arrayMaterial[arrayMaterial.Length - 1].Split('-')[0];
+            // Obtener la última parte del material después del último punto
+            string aux1 = arrayMaterial[arrayMaterial.Length - 1];
+
+            // Extraer los últimos 4 dígitos antes de cualquier letra o símbolo adicional
+            var match = System.Text.RegularExpressions.Regex.Match(aux1, @"(\d{4})\D*$");
+            string anchoStr = match.Success ? match.Groups[1].Value : aux1.Split('-')[0];
+
             double ancho = ConvertirMMaM(anchoStr);
             Console.WriteLine("ancho: " + ancho);
 
@@ -68,6 +74,7 @@ namespace SimaticArcorWebApi.Management
             Console.WriteLine("area: " + area);
             return area;
         }
+
 
         public async Task<List<MaterialReproceso>> ExtractMaterialsAsync(string input, string equipment, CancellationToken ct)
         {

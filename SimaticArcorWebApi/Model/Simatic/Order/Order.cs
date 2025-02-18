@@ -135,6 +135,7 @@ namespace SimaticArcorWebApi.Model.Simatic.Order
         public string Lote { get; set; }
         public string AnchoMaterial { get; set; }
         public string Mts2Defecto { get; set; }
+        public string SetPoint { get; set; }
 
     }
 }
