@@ -109,7 +109,7 @@ namespace SimaticArcorWebApi.Management
                 Planta = prod.location,
                 Proceso = infoWOrderOp.Name,
                 Maquina = prod.materialConsumedActual[0]?.inventory[0]?.binnumber,
-                Tipo = "COMPLETION",
+                Tipo = "COMPLETION SOLO CONSUMO",
                 WorkOrders = infoOrder.NId,
                 Lotes = "",
                 Descripcion = "",
@@ -123,10 +123,10 @@ namespace SimaticArcorWebApi.Management
             newlog.ErrorMessage = res.ToString();
             newlog.ReasonStatus = res["error"]?["message"]?.ToString() != null ? res["error"]?["message"]?.ToString() : "Message Vacio";
             newlog.Succeced = res["isSuccess"]?.ToString() != null ? res["isSuccess"]?.ToString() : "False";
-            newlog.Comando = "CreateWoCompletionAsync";
+            newlog.Comando = "CreateWoCompletionConsumosAsync";
             newlog.ProgramaFuente = "OPCENTER";
             newlog.ProgramaDestino = "NETSUITE";
-            newlog.URL = this.UrlBase + this.nsURL;
+            newlog.URL = this.UrlBase + this.nsURL2;
             await TransactionalLogService.CreateTLog(newlog, ct);
 
             #endregion
