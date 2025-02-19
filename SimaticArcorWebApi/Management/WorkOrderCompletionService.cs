@@ -215,7 +215,7 @@ namespace SimaticArcorWebApi.Management
             newlog.ProgramaFuente = "OPCENTER";
             newlog.ProgramaDestino = "NETSUITE";
             newlog.URL = this.UrlBase + this.nsURL;
-            await TransactionalLogService.CreateTLog(newlog, ct);
+            //await TransactionalLogService.CreateTLog(newlog, ct);
             #endregion
 
 

@@ -147,7 +147,7 @@ namespace SimaticArcorWebApi.Management
                 throw new Exception($"Order Input status [{prod.Status}] is not valid for farther prosessing!");
             }
 
-            
+
 
             Material material = await SimaticMaterialService.GetMaterialByNIdAsync(prod.AssemblyItem, false, true, ct);
             if (material == null)
@@ -237,7 +237,7 @@ namespace SimaticArcorWebApi.Management
             {
                 logger.LogWarning($"Order [{prod.Id}] - [{prod.WorkOrder}] :: Aborting any changes on this Order and WorkOrder!");
                 throw new Exception($"Order status actual [{currentWorkOrder.Status.StatusNId}] do not permit any changes!");
-              
+
             }
 
             // Just change Order & WorkOrder statuses and go away!
@@ -360,6 +360,16 @@ namespace SimaticArcorWebApi.Management
                 userField = new IOOrderUserField { NId = "Orden Venta", UserFieldValue = prod.OrdenVenta, UserFieldType = "String" };
                 userFieldList.Add(userField);
             }
+
+
+            userField = new IOOrderUserField { NId = "Fecha Inicio", UserFieldValue = prod.StartTime.ToString(), UserFieldType = "Datetime" };
+            userFieldList.Add(userField);
+
+
+
+            userField = new IOOrderUserField { NId = "Fecha Fin", UserFieldValue = prod.EndTime.ToString(), UserFieldType = "Datetime" };
+            userFieldList.Add(userField);
+
 
             if (!string.IsNullOrEmpty(prod.FechaEntrega))
             {
