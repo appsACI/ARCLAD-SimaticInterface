@@ -158,7 +158,7 @@ namespace SimaticArcorWebApi.Management
 
             #region TRANSACTIONAL LOG
 
-            
+
             JArray resTemp;
 
             try
@@ -176,8 +176,9 @@ namespace SimaticArcorWebApi.Management
 
             JObject res = new JObject();
 
-            if (resTemp.Count > 0) {
-                res = (JObject) resTemp[0];
+            if (resTemp.Count > 0)
+            {
+                res = (JObject)resTemp[0];
             }
 
             string maquina = "";
@@ -186,7 +187,8 @@ namespace SimaticArcorWebApi.Management
             {
                 maquina = prod.detail[0]?.binnumber;
             }
-            else {
+            else if (prod.materialConsumedActual.Length > 0)
+            {
                 maquina = prod.materialConsumedActual[0]?.inventory[0]?.binnumber;
             }
 
@@ -215,7 +217,7 @@ namespace SimaticArcorWebApi.Management
             newlog.ProgramaFuente = "OPCENTER";
             newlog.ProgramaDestino = "NETSUITE";
             newlog.URL = this.UrlBase + this.nsURL;
-            //await TransactionalLogService.CreateTLog(newlog, ct);
+            await TransactionalLogService.CreateTLog(newlog, ct);
             #endregion
 
 
@@ -351,7 +353,7 @@ namespace SimaticArcorWebApi.Management
             {
                 maquina = prod.detail[0]?.binnumber;
             }
-            else
+            else if (prod.materialConsumedActual.Length > 0)
             {
                 maquina = prod.materialConsumedActual[0]?.inventory[0]?.binnumber;
             }
