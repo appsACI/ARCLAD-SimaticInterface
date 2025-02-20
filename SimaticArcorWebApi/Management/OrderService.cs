@@ -191,7 +191,6 @@ namespace SimaticArcorWebApi.Management
 
                 if ((recreateStatus.Contains(prod.Status)
                   && recreateStatus.Contains(currentWorkOrder.Status.StatusNId)))
-
                 {
                     // Order & WorkOrder will be recreated completely!
                     recreateOrder = true;
@@ -362,12 +361,12 @@ namespace SimaticArcorWebApi.Management
             }
 
 
-            userField = new IOOrderUserField { NId = "Fecha Inicio", UserFieldValue = prod.StartTime.ToString(), UserFieldType = "Datetime" };
+            userField = new IOOrderUserField { NId = "Fecha Inicio", UserFieldValue = prod.StartTime.ToString(), UserFieldType = "String" };
             userFieldList.Add(userField);
 
 
 
-            userField = new IOOrderUserField { NId = "Fecha Fin", UserFieldValue = prod.EndTime.ToString(), UserFieldType = "Datetime" };
+            userField = new IOOrderUserField { NId = "Fecha Fin", UserFieldValue = prod.EndTime.ToString(), UserFieldType = "String" };
             userFieldList.Add(userField);
 
 
