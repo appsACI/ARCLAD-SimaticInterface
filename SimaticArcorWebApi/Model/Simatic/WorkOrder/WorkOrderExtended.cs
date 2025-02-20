@@ -17,8 +17,8 @@ namespace SimaticArcorWebApi.Model.Simatic.WorkOrder
     public bool IsLocked { get; set; }
     public bool ToBeCleaned { get; set; }
     public string WorkOrder_Id { get; set; }
-    public DateTime PlannedStartTime { get; set; }
-    public DateTime PlannedEndTime { get; set; }
+    public DateTime? PlannedStartTime { get; set; }
+    public DateTime? PlannedEndTime { get; set; }
     public object ActualStartTime { get; set; }
     public object ActualEndTime { get; set; }
     public object SourceWorkOrderNId { get; set; }

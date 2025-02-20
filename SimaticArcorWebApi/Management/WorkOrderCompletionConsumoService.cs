@@ -103,12 +103,13 @@ namespace SimaticArcorWebApi.Management
             }
 
             logger.LogInformation($"JSON : '{res}'");
+            
 
             var newlog = new TransactionalLogModel
             {
                 Planta = prod.location,
                 Proceso = infoWOrderOp.Name,
-                Maquina = prod.materialConsumedActual[0]?.inventory[0]?.binnumber,
+                Maquina = "",
                 Tipo = "COMPLETION SOLO CONSUMO",
                 WorkOrders = infoOrder.NId,
                 Lotes = "",
@@ -118,6 +119,7 @@ namespace SimaticArcorWebApi.Management
                 Cortes = "",
                 Payload = JsonConvert.SerializeObject(prod).ToString(),
             };
+            logger.LogInformation($"after");
 
 
             newlog.ErrorMessage = res.ToString();
