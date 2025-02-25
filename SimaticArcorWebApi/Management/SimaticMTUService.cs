@@ -479,13 +479,59 @@ namespace SimaticArcorWebApi.Management
                         EquipmentNId = equipmentId,
                         StateMachineNId = "EstadosMTU",
                         Quantity = new { UoMNId = UomService.GetSimaticUOM(uom), QuantityValue = (decimal)quantity },
-                        //Properties = propertiesRequest.Select(t => new
-                        //{
-                        //  PropertyNId = t.Id,
-                        //  PropertyType = t.PropertyValue.Type,
-                        //  //PropertyUoMNId = UomService.GetSimaticUOM(t.UoMNId),
-                        //  PropertyValue = t.PropertyValue.ValueString
-                        //})
+                    
+                    }
+                });
+
+                var response = await client.PostAsync("sit-svc/application/Material/odata/CreateMaterialTrackingUnit",
+                  new StringContent(json, Encoding.UTF8, "application/json"), token).ConfigureAwait(true);
+
+                SimaticServerHelper.CheckFaultResponse(token, response, logger);
+
+                return await response.Content.ReadAsStringAsync()
+                  .ContinueWith(task =>
+                  {
+                      var result = JsonConvert.DeserializeObject<dynamic>(task.Result);
+                      return result.MaterialTrackingUnitId.ToString();
+                  }, token);
+            }
+        }
+
+        public async Task<string> CreateMaterialTrackingUnitVinilosAsync(string id, string materialId, string materialDesc, string equipmentId, string uom, double quantity,string materialLotNId, CancellationToken token)
+        {
+            using (var client = new AuditableHttpClient(logger))
+            {
+                client.BaseAddress = new Uri(SimaticService.GetUrl());
+
+                // We want the response to be JSON.
+                client.DefaultRequestHeaders.Accept.Clear();
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                // Add the Authorization header with the AccessToken.
+                client.DefaultRequestHeaders.Add("Authorization", "Bearer " + await SimaticService.GetAccessToken(token));
+
+                // Get long number of Material from properties, for MTU Description
+                string mtuName = id;
+         
+                if (equipmentId == "02 RIONEGRO")
+                {
+                    equipmentId = "02 RIO NEGRO";
+                }
+
+                // Build up the data to POST.
+                var json = JsonConvert.SerializeObject(new
+                {
+                    command = new
+                    {
+                        NId = id,
+                        Name = mtuName,
+                        Description = materialDesc,
+                        MaterialLotNId = materialLotNId,
+                        MaterialNId = materialId,
+                        EquipmentNId = equipmentId,
+                        StateMachineNId = "EstadosMTU",
+                        Quantity = new { UoMNId = UomService.GetSimaticUOM(uom), QuantityValue = (decimal)quantity },
+                     
                     }
                 });
 

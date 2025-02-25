@@ -176,14 +176,13 @@ namespace SimaticArcorWebApi.Management
             #region -- Pre-Creation status validations and other operations --
 
             // Check if Order exists
-            WorkOrder currentWorkOrder = null;
+            WorkOrder currentWorkOrder =  await GetWorkOrderAsync(prod, ct);
             Order currentOrder = await SimaticService.GetOrderByNIdAsync(prod.WorkOrder, false, ct);
-            if (currentOrder != null)
+            if (currentWorkOrder != null)
             {
                 logger.LogInformation($"Order [{prod.Id}] - [{prod.WorkOrder}] already exist. Status [{currentOrder.Status?.StatusNId}]");
                 orderId = currentOrder.Id;
                 // Check if WorkOrder exists
-                currentWorkOrder = await GetWorkOrderAsync(prod, ct);
                 if (currentWorkOrder != null)
                 {
                     workOrderId = currentWorkOrder.Id;
@@ -307,8 +306,9 @@ namespace SimaticArcorWebApi.Management
             if (recreateOrder && currentWorkOrder != null)
             {
                 // Delete actual WorkOrder, Order will be recreated by IOInteroperability itself.
+                await SimaticService.DeleteOrderAsync(currentOrder.Id, ct);
                 await SimaticService.DeleteWorkOrderAsync(currentWorkOrder.Id, ct);
-                logger.LogInformation($"WorkOrder [{currentWorkOrder.Id}] - [{currentWorkOrder.NId}] has been deleted successfully!");
+                logger.LogInformation($"WorkOrder and order [{currentWorkOrder.Id}] - [{currentWorkOrder.NId}] has been deleted successfully!");
             }
 
             #endregion

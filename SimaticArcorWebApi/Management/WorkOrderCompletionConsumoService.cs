@@ -103,13 +103,18 @@ namespace SimaticArcorWebApi.Management
             }
 
             logger.LogInformation($"JSON : '{res}'");
-            
 
+            string maquina = "";
+
+            if (prod.materialConsumedActual.Length > 0)
+            {
+                maquina = prod.materialConsumedActual[0]?.inventory[0]?.binnumber;
+            }
             var newlog = new TransactionalLogModel
             {
                 Planta = prod.location,
                 Proceso = infoWOrderOp.Name,
-                Maquina = "",
+                Maquina = maquina,
                 Tipo = "COMPLETION SOLO CONSUMO",
                 WorkOrders = infoOrder.NId,
                 Lotes = "",

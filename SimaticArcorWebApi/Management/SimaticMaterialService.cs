@@ -317,8 +317,7 @@ namespace SimaticArcorWebApi.Management
                   .ContinueWith(task =>
                   {
                       var result = JsonConvert.DeserializeObject<dynamic>(task.Result);
-                      logger.LogInformation($"Result weigth: [{result}]");
-
+                     
                       if (result.value.Count >= 1)
                           return ((IList<ItemWeight>)result.value.ToObject<ItemWeight[]>()).First();
 
