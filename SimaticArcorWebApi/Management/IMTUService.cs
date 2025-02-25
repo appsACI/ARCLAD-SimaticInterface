@@ -11,6 +11,7 @@ namespace SimaticArcorWebApi.Management
     public interface IMTUService
     {
         Task UpdateLotAsync(MTURequest req, CancellationToken ct);
+        Task UpdateLotVinilosAsync(MTURequest[] req, CancellationToken ct);
         Task DescountQuantity(MTUDescount req, CancellationToken ct);
         Task PrintLabel(PrintModel req, CancellationToken ct);
         Task CreateOrUpdateMTUProperties(string id, MTURequestMaterialLotProperty[] requestProperties, CancellationToken token);

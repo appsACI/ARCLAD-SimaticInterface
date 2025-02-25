@@ -37,6 +37,8 @@ namespace SimaticArcorWebApi.Management
 
         Task CreateMaterialTrackingUnitProperties(string id, MTURequestMaterialLotProperty[] properties, CancellationToken token);
 
+        Task<string> CreateMaterialTrackingUnitVinilosAsync(string id, string materialId, string materialDesc, string equipmentId, string uom, double quantity, string materialLotNId, CancellationToken token);
+
         Task SetMaterialTrackingUnitQuantity(string id, string uoMnId, double quantity, CancellationToken token);
 
         Task SetMaterialTrackingUnitStatus(string id, string verb, CancellationToken token);

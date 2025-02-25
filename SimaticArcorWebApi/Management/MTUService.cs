@@ -248,6 +248,136 @@ namespace SimaticArcorWebApi.Management
             }
         }
 
+        public async Task UpdateLotVinilosAsync(MTURequest[] req, CancellationToken ct)
+        {
+            if (!req[req.Length - 1].Id.EndsWith("E"))
+            {
+                Material matLot = await SimaticMaterialService.GetMaterialByNIdAsync(req[req.Length - 1].MaterialDefinitionID, false, false, ct);
+                if (matLot == null)
+                {
+                    logger.LogInformation($"El material [{req[req.Length - 1].MaterialDefinitionID}] no a sido encontrado");
+                    var new_id = req[req.Length - 1].MaterialDefinitionID.Substring(0, req[req.Length - 1].MaterialDefinitionID.Length - 1);
+                    logger.LogInformation($"Buscando por el material [{new_id}]");
+                    matLot = await SimaticMaterialService.GetMaterialByNIdAsync(new_id, false, true, ct);
+                }
+                decimal quantityLot = 0;
+
+                foreach (var mtuItem in req)
+                {
+                    quantityLot += decimal.Parse(mtuItem.Quantity?.QuantityString);
+                }
+
+                MaterialLot mlot = await SimaticMTUService.GetMaterialLot(req[req.Length - 1].Id + "E", ct);
+
+                if (mlot == null)
+                {
+                    var mlotId = await SimaticMTUService.CreateMaterialLot(req[req.Length - 1].Id + "E", matLot.NId, matLot.Description, matLot.UoMNId, Convert.ToDouble(quantityLot), ct);
+                    logger.LogInformation($"Material Lot has been created. Id [{mlotId}]");
+                }
+            }
+
+            foreach (var mtuItem in req)
+            {
+ 
+                mtuItem.Status = string.IsNullOrWhiteSpace(mtuItem.Status) ? "Blanco" : mtuItem.Status;
+
+                decimal quantity = decimal.Parse(mtuItem.Quantity?.QuantityString);
+                Material mat = await SimaticMaterialService.GetMaterialByNIdAsync(mtuItem.MaterialDefinitionID, false, false, ct);
+
+                logger.LogInformation($"Updating lot: Id [{mtuItem.Id}], Status [{mtuItem.Status}], Equipment [{mtuItem.Location.EquipmentID}], Quantity [{quantity}].");
+
+                //Get Material by ID
+
+                if (mat == null)
+                {
+                    logger.LogInformation($"El material [{mtuItem.MaterialDefinitionID}] no a sido encontrado");
+                    var new_id = mtuItem.MaterialDefinitionID.Substring(0, mtuItem.MaterialDefinitionID.Length - 1);
+                    logger.LogInformation($"Buscando por el material [{new_id}]");
+                    mat = await SimaticMaterialService.GetMaterialByNIdAsync(new_id, false, true, ct);
+                }
+
+                Equipment eq = await SimaticEquipmentService.GetEquipmentDataAsync(mtuItem.Location.EquipmentID, true, ct);
+
+                MaterialTrackingUnit mtu = await SimaticMTUService.GetMTUAsync(mtuItem.Id, ct);
+
+                if (mtu == null)
+                {
+                    logger.LogInformation($"MTU not found, creating one");
+
+                    await SimaticMTUService.CreateMaterialTrackingUnitVinilosAsync(mtuItem.Id, mat.NId, mat.Description, eq.NId, mat.UoMNId, Convert.ToDouble(quantity), req[req.Length - 1].Id.EndsWith("E") ? req[req.Length - 1].Id : req[req.Length - 1].Id + "E", ct);
+
+                    logger.LogInformation($"MTU has been created.");
+
+                    // Update info
+                    mtu = await SimaticMTUService.GetMTUAsync(mtuItem.Id, ct);
+
+                    if (mtuItem.Status.ToLower() == "asignar")
+                    {
+                        await SimaticMTUService.SetMaterialTrackingUnitStatus(mtu.Id, mtuItem.Status, ct);
+                    }
+                    logger.LogInformation($"find sample if exist for mtu [{mtuItem.Id}]");
+
+                    GetSampleMtu mtuSample = await SimaticMTUService.GetMTUSampleAsync(mtuItem.Id, ct);
+                    if (mtuSample != null)
+                    {
+                        logger.LogInformation($"found sample if exist for mtu [{mtuSample.SampleNId}]");
+                        List<MTURequestMaterialLotProperty> materialLotList = mtuItem.MaterialLotProperty?.ToList() ?? new List<MTURequestMaterialLotProperty>();
+
+                        foreach (var item in mtuSample.Properties)
+                        {
+                            logger.LogInformation($"add [{item.NameProp}] for mtu and value[{item.ValueProp}]");
+                            if (item.NameProp != "WorkOrder")
+                            {
+                                MTURequestMaterialLotProperty ordenar = new MTURequestMaterialLotProperty()
+                                {
+                                    Id = $"{item.NameProp}",
+                                    PropertyValue = new MTURequestPropertyValue()
+                                    {
+                                        Type = "string",
+                                        UnitOfMeasure = "n/a",
+                                        ValueString = $"{item.ValueProp}",
+
+                                    }
+                                };
+                                logger.LogInformation($"ordenar for mtu");
+
+                                materialLotList.Add(ordenar);
+                            }
+
+                        }
+                        mtuItem.MaterialLotProperty = materialLotList.ToArray();
+
+                    }
+
+                }
+                else
+                {
+                    logger.LogInformation($"Updating MTU");
+
+                    var restQuantity = quantity + Convert.ToDecimal(mtu.Quantity.QuantityValue);
+
+                    if (restQuantity < 0)
+                    {
+                        restQuantity = 0;
+                    }
+
+                    logger.LogInformation($"Updating MTU quantity id [{mtu.NId}] old value [{mtu.Quantity.QuantityValue}] new value [{quantity}] total value [{restQuantity}]");
+                    await SimaticMTUService.SetMaterialTrackingUnitQuantity(mtu.Id, mtu.Quantity.UoMNId, Convert.ToDouble(restQuantity), ct);
+                    mtu.Quantity.QuantityValue = Convert.ToDouble(restQuantity);
+
+                    if (!string.IsNullOrEmpty(eq.NId) && eq.NId != mtu.EquipmentNId)
+                    {
+                        logger.LogInformation($"Moving MTU, id [{mtu.NId}] from [{mtu.EquipmentNId}], to [{eq.NId}]");
+                        await SimaticMTUService.MoveMaterialTrackingUnitToEquipmentAsync(mtu.Id, eq.NId, ct);
+                    }
+                }
+
+                await CreateOrUpdateMTUProperties(mtu.Id, mtuItem.MaterialLotProperty, ct);
+            }
+
+
+        }
+
         public async Task DescountQuantity(MTUDescount req, CancellationToken ct)
         {
 
@@ -2821,12 +2951,12 @@ namespace SimaticArcorWebApi.Management
                 }
 
                 decimal calcPeso = pesoValue * tagPtCantidad;
+                decimal numeroRedondeadoFinal = Math.Round(calcPeso, 2);
 
-                //decimal calcPeso = pesoValue * decimal.Parse(req.LabelTagsRollos.TagPtcantidad);
-                logger.LogInformation($"peso del item:[{pesoValue}] kg, cantidad del producido [{req.LabelTagsRollos.TagPtcantidad}]M2, peso calulado: [{calcPeso}] ");
+                decimal pesoTotal = numeroRedondeadoFinal;
+                logger.LogInformation($"peso del item:[{pesoValue}] kg, cantidad del producido [{tagPtCantidad}]M2, peso calulado: [{pesoTotal}] ");
 
-                req.LabelTagsRollos.TagPtpesoaproximado = calcPeso.ToString(CultureInfo.InvariantCulture);
-
+                req.LabelTagsRollos.TagPtpesoaproximado = pesoTotal.ToString();
 
                 req.LabelTagsRollos.TagPtdescripcion = mat.Name;
                 List<TagModel> TagModelList = new List<TagModel>() { };
@@ -3283,10 +3413,12 @@ namespace SimaticArcorWebApi.Management
 
 
                 decimal calcPeso = pesoValue * tagPtCantidad;
+                decimal numeroRedondeadoFinal = Math.Round(calcPeso, 2);
 
-                logger.LogInformation($"peso del item:[{pesoValue}] kg, cantidad del producido [{tagPtCantidad}]M2, peso calulado: [{calcPeso}] ");
+                decimal pesoTotal = numeroRedondeadoFinal;
+                logger.LogInformation($"peso del item:[{pesoValue}] kg, cantidad del producido [{tagPtCantidad}]M2, peso calulado: [{pesoTotal}] ");
 
-                req.LabelTagsArseg.TagArpesoaproximado = calcPeso.ToString(CultureInfo.InvariantCulture);
+                req.LabelTagsArseg.TagArpesoaproximado = pesoTotal.ToString();
                 req.LabelTagsArseg.TagArreferencia = mat.Name;
                 req.LabelTagsArseg.TagArdescripcion = mat.Name;
                 req.LabelTagsArseg.TagArdescripcion1 = mat.Name;
@@ -4299,6 +4431,63 @@ namespace SimaticArcorWebApi.Management
                     TagModelList.Add(model);
                 }
 
+                //if (!string.IsNullOrEmpty(req.LabelTagsOther.TagPtconsecutivo))
+                //{
+                //    model = new TagModel
+                //    {
+                //        TagName = "ptconsecutivo",
+                //        TagValue = req.LabelTagsOther.TagPtconsecutivo
+                //    };
+                //    TagModelList.Add(model);
+                //}
+                //else
+                //{
+                //    model = new TagModel
+                //    {
+                //        TagName = "ptconsecutivo",
+                //        TagValue = ""
+                //    };
+                //    TagModelList.Add(model);
+                //}
+
+                //if (!string.IsNullOrEmpty(req.LabelTagsOther.TagPtestiba))
+                //{
+                //    model = new TagModel
+                //    {
+                //        TagName = "ptestiba",
+                //        TagValue = req.LabelTagsOther.TagPtestiba
+                //    };
+                //    TagModelList.Add(model);
+                //}
+                //else
+                //{
+                //    model = new TagModel
+                //    {
+                //        TagName = "ptestiba",
+                //        TagValue = ""
+                //    };
+                //    TagModelList.Add(model);
+                //}
+
+                //if (!string.IsNullOrEmpty(req.LabelTagsOther.TagPtconsecutivoestiba))
+                //{
+                //    model = new TagModel
+                //    {
+                //        TagName = "ptconsecutivoestiba",
+                //        TagValue = req.LabelTagsOther.TagPtconsecutivoestiba
+                //    };
+                //    TagModelList.Add(model);
+                //}
+                //else
+                //{
+                //    model = new TagModel
+                //    {
+                //        TagName = "ptconsecutivoestiba",
+                //        TagValue = ""
+                //    };
+                //    TagModelList.Add(model);
+                //}
+
                 logger.LogInformation($"lista de tags: [{TagModelList.ToArray()}]");
 
                 await SimaticMTUService.PrintLabel(req, TagModelList.ToArray(), ct);
@@ -4425,7 +4614,7 @@ namespace SimaticArcorWebApi.Management
         private static string removeDecimalIfZero(string dato)
         {
             string[] decimales = dato.Split(".");
-            if (decimales[decimales.Length - 1].StartsWith("0"))
+            if (decimales[decimales.Length - 1].StartsWith("00"))
             {
                 return decimales[0];
             }

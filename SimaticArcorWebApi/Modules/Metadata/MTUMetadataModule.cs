@@ -41,18 +41,6 @@ namespace SimaticArcorWebApi.Modules.Metadata
               typeof(CreateRequirementModel),
               typeof(CreateRequirementModelCorte),
               typeof(UpdateLengthModel)
-
-
-              //typeof(G8ResponseRequest),
-              //typeof(G8ResponseRequestLocation),
-              //typeof(G8ResponseRequestMaterialLotProperty),
-              //typeof(G8ResponseRequestQuantity),
-              //typeof(G8ResponseRequestValue),
-              //typeof(DCMovementRequest),
-              //typeof(DCMovementRequestLocation),
-              //typeof(DCMovementRequestMaterialLotProperty),
-              //typeof(DCMovementRequestPropertyValue),
-              //typeof(DCMovementRequestQuantity)
               );
 
             Describe["UpdateLot"] = description => description.AsSwagger(
@@ -62,6 +50,16 @@ namespace SimaticArcorWebApi.Modules.Metadata
                         .Summary("Actualiza un lote")
                         .Response((int)HttpStatusCode.Created, r => r.Description("Actualiza los parametros de un lote"))
                         .BodyParameter(p => p.Description("Actualiza lote y mtu").Name("body").Schema<MTURequest>())
+                )
+            );
+
+            Describe["UpdateLotVinilos"] = description => description.AsSwagger(
+                with => with.Operation(
+                    op => op.OperationId("UpdateLotVinilos")
+                        .Tag("Material Tracking Unit")
+                        .Summary("Actualizar array de vinilos y su estiba")
+                        .Response((int)HttpStatusCode.Created, r => r.Description("Actualiza un array de vinilos"))
+                        .BodyParameter(p => p.Description("Actualiza Un array de vinilos").Name("body").Schema<MTURequest>())
                 )
             );
 

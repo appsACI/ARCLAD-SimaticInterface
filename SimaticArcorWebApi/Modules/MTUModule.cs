@@ -68,6 +68,8 @@ namespace SimaticArcorWebApi.Modules
 
             Post("/", UpdateLot, name: "UpdateLot");
 
+            Post("/updateVinilos", UpdateLotVinilos, name: "UpdateLotVinilos");
+
             Post("/descount", Descount, name: "Descount");
 
             Post("/AssignedUnassign", AssignedUnassign, name: "AssignedUnassign");
@@ -559,6 +561,37 @@ namespace SimaticArcorWebApi.Modules
                     return Negotiate.WithStatusCode(HttpStatusCode.BadRequest).WithModel(this.ModelValidationResult.FormattedErrors);
 
                 await MTUService.UpdateLotAsync(req, ct);
+
+                return Negotiate.WithStatusCode(HttpStatusCode.Created);
+            }
+            catch (SimaticApiException e)
+            {
+                logger.LogError(e, "Error trying to update lot");
+                return Negotiate.WithStatusCode(e.StatusCode).WithModel(e.Message);
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e, "Error trying to update lot");
+                return Negotiate.WithStatusCode(HttpStatusCode.InternalServerError).WithModel(e.Message);
+            }
+        }
+
+        private async Task<dynamic> UpdateLotVinilos(dynamic parameters, CancellationToken ct)
+        {
+            try
+            {
+                if (config.EnableRequestLogging)
+                {
+                    logger.LogInformation($"Body update lot Vinilos:[{ RequestStream.FromStream(Request.Body).AsString()}]");
+                    Request.Body.Position = 0;
+                }
+
+                var req = this.BindAndValidate<MTURequest[]>();
+
+                if (!this.ModelValidationResult.IsValid)
+                    return Negotiate.WithStatusCode(HttpStatusCode.BadRequest).WithModel(this.ModelValidationResult.FormattedErrors);
+
+                await MTUService.UpdateLotVinilosAsync(req, ct);
 
                 return Negotiate.WithStatusCode(HttpStatusCode.Created);
             }
