@@ -278,7 +278,7 @@ namespace SimaticArcorWebApi.Management
 
             foreach (var mtuItem in req)
             {
- 
+
                 mtuItem.Status = string.IsNullOrWhiteSpace(mtuItem.Status) ? "Blanco" : mtuItem.Status;
 
                 decimal quantity = decimal.Parse(mtuItem.Quantity?.QuantityString);
@@ -4431,43 +4431,43 @@ namespace SimaticArcorWebApi.Management
                     TagModelList.Add(model);
                 }
 
-                //if (!string.IsNullOrEmpty(req.LabelTagsOther.TagPtconsecutivo))
-                //{
-                //    model = new TagModel
-                //    {
-                //        TagName = "ptconsecutivo",
-                //        TagValue = req.LabelTagsOther.TagPtconsecutivo
-                //    };
-                //    TagModelList.Add(model);
-                //}
-                //else
-                //{
-                //    model = new TagModel
-                //    {
-                //        TagName = "ptconsecutivo",
-                //        TagValue = ""
-                //    };
-                //    TagModelList.Add(model);
-                //}
+                if (!string.IsNullOrEmpty(req.LabelTagsOther.TagPtconsecutivo))
+                {
+                    model = new TagModel
+                    {
+                        TagName = "ptcconsecutivo",
+                        TagValue = req.LabelTagsOther.TagPtconsecutivo
+                    };
+                    TagModelList.Add(model);
+                }
+                else
+                {
+                    model = new TagModel
+                    {
+                        TagName = "ptcconsecutivo",
+                        TagValue = ""
+                    };
+                    TagModelList.Add(model);
+                }
 
-                //if (!string.IsNullOrEmpty(req.LabelTagsOther.TagPtestiba))
-                //{
-                //    model = new TagModel
-                //    {
-                //        TagName = "ptestiba",
-                //        TagValue = req.LabelTagsOther.TagPtestiba
-                //    };
-                //    TagModelList.Add(model);
-                //}
-                //else
-                //{
-                //    model = new TagModel
-                //    {
-                //        TagName = "ptestiba",
-                //        TagValue = ""
-                //    };
-                //    TagModelList.Add(model);
-                //}
+                if (!string.IsNullOrEmpty(req.LabelTagsOther.TagPtestiba))
+                {
+                    model = new TagModel
+                    {
+                        TagName = "ptcestiba",
+                        TagValue = req.LabelTagsOther.TagPtestiba
+                    };
+                    TagModelList.Add(model);
+                }
+                else
+                {
+                    model = new TagModel
+                    {
+                        TagName = "ptcestiba",
+                        TagValue = ""
+                    };
+                    TagModelList.Add(model);
+                }
 
                 //if (!string.IsNullOrEmpty(req.LabelTagsOther.TagPtconsecutivoestiba))
                 //{
@@ -4487,6 +4487,44 @@ namespace SimaticArcorWebApi.Management
                 //    };
                 //    TagModelList.Add(model);
                 //}
+
+                if (!string.IsNullOrEmpty(req.LabelTagsOther.TagPtclabelcantidadrollos))
+                {
+                    model = new TagModel
+                    {
+                        TagName = "ptclabelcantidadrollos ",
+                        TagValue = req.LabelTagsOther.TagPtclabelcantidadrollos
+                    };
+                    TagModelList.Add(model);
+                }
+                else
+                {
+                    model = new TagModel
+                    {
+                        TagName = "ptclabelcantidadrollos",
+                        TagValue = ""
+                    };
+                    TagModelList.Add(model);
+                }
+
+                if (!string.IsNullOrEmpty(req.LabelTagsOther.TagPtccantidadrollos))
+                {
+                    model = new TagModel
+                    {
+                        TagName = "ptccantidadrollos",
+                        TagValue = req.LabelTagsOther.TagPtccantidadrollos
+                    };
+                    TagModelList.Add(model);
+                }
+                else
+                {
+                    model = new TagModel
+                    {
+                        TagName = "ptccantidadrollos",
+                        TagValue = ""
+                    };
+                    TagModelList.Add(model);
+                }
 
                 logger.LogInformation($"lista de tags: [{TagModelList.ToArray()}]");
 
