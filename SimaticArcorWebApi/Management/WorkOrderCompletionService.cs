@@ -154,7 +154,7 @@ namespace SimaticArcorWebApi.Management
             }
 
             var woId = await SimaticWorkOrderCompletionService.CreateWoCompletionAsync(prod, ct);
-            logger.LogInformation($"Order completion {prod.woChildrenId} send successfully with ID '{woId}'");
+            logger.LogInformation($"Order completion {prod.woChildrenId} - {infoWOrder.NId} send successfully with ID '{woId}'");
 
             #region TRANSACTIONAL LOG
 
@@ -171,8 +171,6 @@ namespace SimaticArcorWebApi.Management
                 logger.LogError($"Error parsing woId: {ex.Message}");
                 resTemp = new JArray(); // En caso de error, asigna un array vacío
             }
-
-            logger.LogInformation($"JSON : '{resTemp}'");
 
             JObject res = new JObject();
 
@@ -336,8 +334,6 @@ namespace SimaticArcorWebApi.Management
                 resTemp = new JArray(); // En caso de error, asigna un array vacío
             }
 
-            logger.LogInformation($"JSON : '{resTemp}'");
-
             JObject res = new JObject();
 
             if (resTemp.Count > 0)
@@ -384,7 +380,7 @@ namespace SimaticArcorWebApi.Management
             await TransactionalLogService.CreateTLog(newlog, ct);
             #endregion
 
-            logger.LogInformation($"Order completion [{prod.woChildrenId}] send successfully with ID '{woId}'");
+            logger.LogInformation($"Order completion [{prod.woChildrenId}]-[{infoWOrder.NId}] send successfully with ID '{woId}'");
 
             return woId;
 

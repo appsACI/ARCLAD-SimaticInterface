@@ -256,6 +256,9 @@ namespace SimaticWebApi.Model.Custom.PrintLabel
         public string TagPtconsecutivo { get; set; }
         public string TagPtestiba { get; set; }
         public string TagPtconsecutivoestiba { get; set; }
+        public string TagPtccantidadrollos { get; set; }
+        public string TagPtclabelcantidadrollos { get; set; }
+        
     }
 
     public class Reimpresion

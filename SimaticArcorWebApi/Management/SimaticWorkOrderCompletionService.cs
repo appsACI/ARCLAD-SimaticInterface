@@ -128,6 +128,7 @@ namespace SimaticArcorWebApi.Management
         {
             if (!woCompletion.isbackflush)
             {
+
                 using (var client = new AuditableHttpClient(logger))
                 {
                     client.BaseAddress = new Uri(SimaticService.GetUrl());

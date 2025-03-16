@@ -93,16 +93,12 @@ namespace SimaticArcorWebApi.Management
                 resTemp = new JArray(); // En caso de error, asigna un array vacío
             }
 
-            logger.LogInformation($"JSON : '{resTemp}'");
-
             JObject res = new JObject();
 
             if (resTemp.Count > 0)
             {
                 res = (JObject)resTemp[0];
             }
-
-            logger.LogInformation($"JSON : '{res}'");
 
             string maquina = "";
 
@@ -124,8 +120,6 @@ namespace SimaticArcorWebApi.Management
                 Cortes = "",
                 Payload = JsonConvert.SerializeObject(prod).ToString(),
             };
-            logger.LogInformation($"after");
-
 
             newlog.ErrorMessage = res.ToString();
             newlog.ReasonStatus = res["error"]?["message"]?.ToString() != null ? res["error"]?["message"]?.ToString() : "Message Vacio";
@@ -138,7 +132,7 @@ namespace SimaticArcorWebApi.Management
 
             #endregion
 
-            logger.LogInformation($"Order completion Consumo [{prod.woChildrenId}] send successfully with ID '{woId}'");
+            logger.LogInformation($"Order completion Consumo [{prod.woChildrenId}] - [{infoOrder.NId}] send successfully with ID '{woId}'");
 
             return woId;
 
