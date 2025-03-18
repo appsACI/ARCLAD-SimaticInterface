@@ -106,18 +106,23 @@ namespace SimaticArcorWebApi.Management
         Task AddWorkOrderOperationMaterialRequirementsToWorkOrderOperation(IList<MaterialRequirement> prod, string workOrderOperationId, string verb, CancellationToken token);
 
         Task<dynamic> GetWorkOrderParametersAsync(string id, CancellationToken token);
+
         Task<dynamic> GetWorkOrderParameterUltimaDeclarion(string id, CancellationToken token);
+
         Task AddWorkOrderParametersAsync(string woId, Params[] parameters, CancellationToken token);
+
         Task<dynamic> UpdateWorkOrderParametersAsync(string propId, string propValue, CancellationToken token);
+
         Task DeleteWorkOrderParameter(string id, CancellationToken token);
 
         Task<HttpResponseMessage> PostToRTDSWriteAsync(RTDS requestBody, CancellationToken ct);
 
         Task<string> AddMaterialReprosesoWorkOrderAsync(WorkOrderOperationMaterialRequirement[] materiales, string workOrderOperationId, CancellationToken ct);
+
         Task<string> AddMaterialReprosesoOrderAsync(OrderOperationMaterialRequirement[] materiales, string orderOperationId, CancellationToken ct);
 
-
         Task<dynamic> GetOrderOperationAsync(Guid WorkOrderId, CancellationToken token);
+
         Task<string> AddWorkOrderPriority(string id, int priority, CancellationToken ct);
 
         Task<dynamic> GetOrderByNameAsync(string id, CancellationToken token);

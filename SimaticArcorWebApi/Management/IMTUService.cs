@@ -21,7 +21,7 @@ namespace SimaticArcorWebApi.Management
 
         Task<IList<MTUPropiedadesDefectos>> GetPropertiesDefectos(string parameterId, CancellationToken ct);
         Task<dynamic> GetLabelHistory(ReimpresionFilters req, CancellationToken ct);
-
+        Task<dynamic> GetLotePadreProp(string NId, CancellationToken token);
         #region RDL
         Task<string> CreateRequirement(CreateRequirementModel req, CancellationToken ct);
         Task<string> UpdateRequirement(CreateRequirementModel req, CancellationToken ct);

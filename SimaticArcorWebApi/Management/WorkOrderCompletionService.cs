@@ -115,7 +115,7 @@ namespace SimaticArcorWebApi.Management
 
             logger.LogInformation($"Procesando ultimo tiempo de declaracion");
 
-            if (ultimaDeclaracion.Length <= 0)
+            if (ultimaDeclaracion == null)
             {
                 logger.LogInformation($"Agregando ultimo tiempo de declaracion a la workorder [{infoOrder.NId}]");
                 DateTime fecha1 = Convert.ToDateTime(prod.endTime);

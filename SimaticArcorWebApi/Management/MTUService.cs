@@ -818,6 +818,15 @@ namespace SimaticArcorWebApi.Management
 
         }
 
+        public async Task<dynamic> GetLotePadreProp(string req, CancellationToken ct)
+        {
+            logger.LogInformation($"Reciveb MTUNid");
+
+            MaterialTrackingUnitProperty lotePadre = await SimaticMTUService.GetLotePadreProp(req, ct);
+
+            return lotePadre.PropertyValue;
+        }
+
         [Obsolete]
         public async Task TrazabilidadMP(TrazabilidadMPModel req, CancellationToken ct)
         {
