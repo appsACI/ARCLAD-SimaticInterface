@@ -114,44 +114,44 @@ namespace SimaticArcorWebApi.Management
             }
 
             logger.LogInformation($"Procesando ultimo tiempo de declaracion");
+            await ProcesarUltimaDeclaracionAsync(infoOrder, infoWOrder, prod, ct);
+            //if (ultimaDeclaracion == null)
+            //{
+            //    logger.LogInformation($"Agregando ultimo tiempo de declaracion a la workorder [{infoOrder.NId}]");
+            //    DateTime fecha1 = Convert.ToDateTime(prod.endTime);
+            //    DateTimeOffset fechaOffset1 = new DateTimeOffset(fecha1);
+            //    DateTimeOffset fechaOffsetSumada = fechaOffset1.AddHours(5);
 
-            if (ultimaDeclaracion == null)
-            {
-                logger.LogInformation($"Agregando ultimo tiempo de declaracion a la workorder [{infoOrder.NId}]");
-                DateTime fecha1 = Convert.ToDateTime(prod.endTime);
-                DateTimeOffset fechaOffset1 = new DateTimeOffset(fecha1);
-                DateTimeOffset fechaOffsetSumada = fechaOffset1.AddHours(5);
+            //    // Formatear la fecha en el formato deseado (ISO 8601 con zona horaria Z)
+            //    string fechaFormatoISO1 = fechaOffsetSumada.ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
+            //    List<Params> props = new List<Params>();
+            //    Params prop = new Params
+            //    {
+            //        ParameterNId = "ultimaDeclaracion",
+            //        ParameterTargetValue = fechaFormatoISO1
+            //    };
+            //    props.Add(prop);
 
-                // Formatear la fecha en el formato deseado (ISO 8601 con zona horaria Z)
-                string fechaFormatoISO1 = fechaOffsetSumada.ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
-                List<Params> props = new List<Params>();
-                Params prop = new Params
-                {
-                    ParameterNId = "ultimaDeclaracion",
-                    ParameterTargetValue = fechaFormatoISO1
-                };
-                props.Add(prop);
+            //    await OrderService.AddWorkOrderParametersAsync(infoWOrder.Id, props.ToArray(), ct);
 
-                await OrderService.AddWorkOrderParametersAsync(infoWOrder.Id, props.ToArray(), ct);
+            //}
+            //else
+            //{
+            //    logger.LogInformation($"Actualizando ultimo tiempo de declaracion a la workorder [{infoOrder.NId}]");
 
-            }
-            else
-            {
-                logger.LogInformation($"Actualizando ultimo tiempo de declaracion a la workorder [{infoOrder.NId}]");
+            //    string Id = ultimaDeclaracion[0].Id;
+            //    DateTime fecha = Convert.ToDateTime(prod.endTime);
+            //    DateTimeOffset fechaOffset2 = new DateTimeOffset(fecha);
+            //    DateTimeOffset fechaOffsetSumada = fechaOffset2.AddHours(5);
 
-                string Id = ultimaDeclaracion[0].Id;
-                DateTime fecha = Convert.ToDateTime(prod.endTime);
-                DateTimeOffset fechaOffset2 = new DateTimeOffset(fecha);
-                DateTimeOffset fechaOffsetSumada = fechaOffset2.AddHours(5);
+            //    // Formatear la fecha en el formato deseado (ISO 8601 con zona horaria Z)
+            //    string fechaFormatoISO2 = fechaOffsetSumada.ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
+            //    string Value = fechaFormatoISO2;
 
-                // Formatear la fecha en el formato deseado (ISO 8601 con zona horaria Z)
-                string fechaFormatoISO2 = fechaOffsetSumada.ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
-                string Value = fechaFormatoISO2;
-
-                await OrderService.UpdateWorkOrderParametersAsync(Id, Value, ct);
+            //    await OrderService.UpdateWorkOrderParametersAsync(Id, Value, ct);
 
 
-            }
+            //}
 
             var woId = await SimaticWorkOrderCompletionService.CreateWoCompletionAsync(prod, ct);
             logger.LogInformation($"Order completion {prod.woChildrenId} - {infoWOrder.NId} send successfully with ID '{woId}'");
@@ -387,7 +387,73 @@ namespace SimaticArcorWebApi.Management
             #endregion
         }
 
+        public async Task ProcesarUltimaDeclaracionAsync(Order infoOrder, WorkOrder infoWOrder, WorkOrderCompletionModel prod, CancellationToken ct)
+        {
+            if (infoOrder == null || infoWOrder == null)
+            {
+                logger.LogError("Error: Información de la orden no es válida.");
+                return;
+            }
 
+            if (prod?.endTime == null)
+            {
+                logger.LogError($"Error: La fecha de finalización es nula para la orden [{infoOrder.NId}].");
+                return;
+            }
 
+            try
+            {
+                // Convertir y formatear fecha
+                DateTime fecha = Convert.ToDateTime(prod.endTime);
+                DateTimeOffset fechaOffset = new DateTimeOffset(fecha).AddHours(5);
+                string fechaFormatoISO = fechaOffset.ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
+
+                // 🔹 Primera consulta: verificamos si ya existe `ultimaDeclaracion`
+                ProcessParameter[] ultimaDeclaracion = await OrderService.GetWorkOrderParameterUltimaDeclarion(infoWOrder.Id, ct);
+
+                var declaracionExistente = ultimaDeclaracion?
+                    .FirstOrDefault(p => p != null && p.ParameterNId == "ultimaDeclaracion");
+
+                if (declaracionExistente != null)
+                {
+                    logger.LogInformation($"Última declaración ya existe, actualizando workorder [{infoOrder.NId}].");
+                    await OrderService.UpdateWorkOrderParametersAsync(declaracionExistente.Id, fechaFormatoISO, ct);
+                    return;
+                }
+
+                // 🔹 Esperamos un breve momento para dar oportunidad a que la otra ejecución termine
+                await Task.Delay(500, ct);  // 500 ms de espera
+
+                // 🔹 Segunda consulta: verificamos si ya se creó mientras esperábamos
+                ultimaDeclaracion = await OrderService.GetWorkOrderParameterUltimaDeclarion(infoWOrder.Id, ct);
+                declaracionExistente = ultimaDeclaracion?
+                    .FirstOrDefault(p => p != null && p.ParameterNId == "ultimaDeclaracion");
+
+                if (declaracionExistente != null)
+                {
+                    logger.LogInformation($"Última declaración ya fue creada mientras esperábamos. Actualizando en workorder [{infoOrder.NId}].");
+                    await OrderService.UpdateWorkOrderParametersAsync(declaracionExistente.Id, fechaFormatoISO, ct);
+                    return;
+                }
+
+                // 🔹 Si después de la segunda verificación aún no existe, la creamos
+                logger.LogInformation($"Agregando última declaración a la workorder [{infoOrder.NId}].");
+
+                var props = new List<Params>
+        {
+            new Params
+            {
+                ParameterNId = "ultimaDeclaracion",
+                ParameterTargetValue = fechaFormatoISO
+            }
+        };
+
+                await OrderService.AddWorkOrderParametersAsync(infoWOrder.Id, props.ToArray(), ct);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError($"Error procesando última declaración para la orden [{infoOrder.NId}]: {ex.Message}");
+            }
+        }
     }
 }
