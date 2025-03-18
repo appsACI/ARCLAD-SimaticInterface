@@ -34,5 +34,7 @@ namespace SimaticArcorWebApi.Management
         Task AddMaterialOperationEmpaqueCorteHojasAsync(MaterialOperationEmpaqueCorteHojas prod, CancellationToken ct);
 
         Task UpdateWorkOrderCounters(Counters req, CancellationToken ct);
+
+        Task CreateOrUpdateUltimaDeclaracionParam(string workOrderId, Params[] props, string value, CancellationToken ct);
     }
 }

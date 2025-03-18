@@ -96,6 +96,8 @@ namespace SimaticArcorWebApi.Modules
 
             Get("/ConsultaRequirement/{Lote}/{Nid}", ConsultaRequirement, name: "ConsultaRequirement");
 
+            Get("/GetLotePadreProp/{MTU}", GetLotePadreProp, name: "GetLotePadreProp");
+
             Post("/createSample", CreateSample, name: "CreateSample");
 
             Post("/createRequirement", CreateRequirement, name: "CreateRequirement");
@@ -149,6 +151,42 @@ namespace SimaticArcorWebApi.Modules
             }
         }
 
+        public async Task<dynamic> GetLotePadreProp(dynamic parameters, CancellationToken ct)
+        {
+            try
+            {
+                if (config.EnableRequestLogging)
+                {
+                    logger.LogInformation($"Body:[{RequestStream.FromStream(Request.Body).AsString()}]");
+                    Request.Body.Position = 0;
+                }
+
+                string MTUNId = ((dynamic)parameters).MTU.Value;
+           
+                if (!this.ModelValidationResult.IsValid)
+                {
+                    logger.LogError($"Mtu [{MTUNId}]  structure is not valid!");
+
+                    return Negotiate.WithStatusCode(HttpStatusCode.BadRequest).WithModel(this.ModelValidationResult.FormattedErrors);
+                }
+
+                CancellationTokenSource tokenSource = new CancellationTokenSource();
+
+                string mtuParam = await MTUService.GetLotePadreProp(MTUNId,ct);
+
+                return await Negotiate.WithStatusCode(HttpStatusCode.OK).WithModel(mtuParam);
+            }
+            catch (SimaticApiException e)
+            {
+                logger.LogError(e, "Error trying to create order");
+                return Negotiate.WithStatusCode(e.StatusCode).WithModel(e.Message);
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e, "Error trying to create order");
+                return Negotiate.WithStatusCode(HttpStatusCode.InternalServerError).WithModel(e.Message);
+            }
+        }
         #region RDL
 
         private async Task<dynamic> ConsultaRequirement(dynamic parameters, CancellationToken ct)

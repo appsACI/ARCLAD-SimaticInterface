@@ -215,34 +215,18 @@ namespace SimaticArcorWebApi.Modules.Metadata
                 )
             );
 
-            // Describe["G8Response"] = description => description.AsSwagger(
-            //     with => with.Operation(
-            //       op => op.OperationId("G8Response")
-            //         .Tag("Process G8 response")
-            //         .Summary("Procesa Respuesta del G8")
-            //         .Response((int)HttpStatusCode.Created, r => r.Description("Actualiza la ubicacion de un lote"))
-            //         .BodyParameter(p => p.Description("G8ResponseRequest").Name("body").Schema<G8ResponseRequest>())
-            //     )
-            //   );
+            Describe["GetLotePadreProp"] = description => description.AsSwagger(
+                with => with.Operation(
+                    op => op.OperationId("GetLotePadreProp")
+                        .Tag("Material Tracking Unit")
+                        .Parameter(p => p.Name("MTU").Description("Identificador del parametro MTU").IsRequired().In(ParameterIn.Path))
+                        
+                        .Summary("Consultar la propiedad de lote padre de las MTU")
+                        .Response((int)HttpStatusCode.Accepted, r => r.Description("Lote padre de la mtu").Schema<string>())
+                )
+            );
 
-            // Describe["DCMovement"] = description => description.AsSwagger(
-            //   with => with.Operation(
-            //     op => op.OperationId("DCMovement")
-            //       .Tag("Send information from JDE to System")
-            //       .Summary("Send information from JDE to System")
-            //       .Response((int)HttpStatusCode.Created, r => r.Description("Send information from JDE to System"))
-            //       .BodyParameter(p => p.Description("DCMovementRequest").Name("body").Schema<DCMovementRequest>())
-            //   )
-            // );
-            // Describe["LotMovementJDE"] = description => description.AsSwagger(
-            //  with => with.Operation(
-            //    op => op.OperationId("LotMovementJDE")
-            //      .Tag("Delivery or Return of lot to JDE")
-            //      .Summary("Entrega o retorno de lotes a JDE")
-            //      .Response((int)HttpStatusCode.Created, r => r.Description("Entrega o retorno de lotes a JDE"))
-            //      .BodyParameter(p => p.Description("LotMovementJDE").Name("body").Schema<MTURequest>())
-            //  )
-            //);
+
         }
 
     }

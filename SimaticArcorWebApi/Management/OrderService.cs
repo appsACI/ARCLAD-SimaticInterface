@@ -176,7 +176,7 @@ namespace SimaticArcorWebApi.Management
             #region -- Pre-Creation status validations and other operations --
 
             // Check if Order exists
-            WorkOrder currentWorkOrder =  await GetWorkOrderAsync(prod, ct);
+            WorkOrder currentWorkOrder = await GetWorkOrderAsync(prod, ct);
             Order currentOrder = await SimaticService.GetOrderByNIdAsync(prod.WorkOrder, false, ct);
             if (currentWorkOrder != null)
             {
@@ -1389,23 +1389,21 @@ namespace SimaticArcorWebApi.Management
 
                     }
 
-                    if (param.ParameterNId == "puntaTrim" || param.ParameterNId == "refill")
-                    {
-                        foreach (var newparam in req.Parameters)
-                        {
-                            if (newparam.ParameterNId == "puntaTrim")
-                            {
-                                newparam.ParameterTargetValue = Convert.ToString(Convert.ToDecimal(newparam.ParameterTargetValue) + Convert.ToDecimal(param.ParameterTargetValue));
-                                await SimaticService.DeleteWorkOrderParameter(param.Id, ct);
-                            }
 
-                            if (newparam.ParameterNId == "refill")
-                            {
-                                newparam.ParameterTargetValue = Convert.ToString(Convert.ToDecimal(newparam.ParameterTargetValue) + Convert.ToDecimal(param.ParameterTargetValue));
-                                await SimaticService.DeleteWorkOrderParameter(param.Id, ct);
-                            }
+                    logger.LogInformation($"delete parameters");
+
+                    foreach (var newparam in req.Parameters)
+                    {
+                        if (param.ParameterNId.ToLower() == newparam.ParameterNId.ToLower())
+                        {
+                            logger.LogInformation($"delete [{newparam.ParameterNId}] parameter");
+
+                            newparam.ParameterTargetValue = Convert.ToString(Convert.ToDecimal(newparam.ParameterTargetValue) + Convert.ToDecimal(param.ParameterTargetValue));
+                            await SimaticService.DeleteWorkOrderParameter(param.Id, ct);
                         }
+
                     }
+
 
                 }
                 logger.LogInformation($"Processed to update counters");
@@ -1504,5 +1502,21 @@ namespace SimaticArcorWebApi.Management
 
         }
 
+        public async Task CreateOrUpdateUltimaDeclaracionParam(string workOrderId, Params[] props, string value, CancellationToken ct)
+        {
+            var ultimaDeclaracion = await SimaticService.GetWorkOrderParameterUltimaDeclarion(workOrderId, ct);
+
+            if (ultimaDeclaracion != null)
+            {
+                await SimaticService.UpdateWorkOrderParametersAsync(ultimaDeclaracion[0].Id, value, ct);
+
+            }
+            else
+            {
+                await SimaticService.AddWorkOrderParametersAsync(workOrderId, props, ct);
+
+            }
+
+        }
     }
 }
