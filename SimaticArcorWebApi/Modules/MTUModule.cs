@@ -344,7 +344,7 @@ namespace SimaticArcorWebApi.Modules
             {
                 if (config.EnableRequestLogging)
                 {
-                    logger.LogInformation($"Body:[{ RequestStream.FromStream(Request.Body).AsString()}]");
+                    logger.LogInformation($"Body Descount mtu:[{ RequestStream.FromStream(Request.Body).AsString()}]");
                     Request.Body.Position = 0;
                 }
                 var errorList = new List<KeyValuePair<string, string>>();

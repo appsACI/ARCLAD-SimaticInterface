@@ -1986,6 +1986,8 @@ namespace SimaticArcorWebApi.Management
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
                 var response = await client.PostAsync("api/RTDS/RTDSWrite", content, ct).ConfigureAwait(false);
+                logger.LogInformation($"RDTS RESPONSE:[{response}]");
+
 
                 return response;
             }

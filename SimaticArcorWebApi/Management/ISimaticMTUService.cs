@@ -62,6 +62,8 @@ namespace SimaticArcorWebApi.Management
         Task<dynamic> GetPrinter(string equipmentNId, CancellationToken token);
 
         Task<dynamic> GetLotePadreProp(string NId, CancellationToken token);
+
+        Task<dynamic> GetUniqueId(string NId, CancellationToken token);
         #endregion
 
         #region MaterialLot

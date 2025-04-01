@@ -22,7 +22,7 @@ namespace SimaticArcorWebApi.Model.Custom.WorkOrderCompletion
         public int employeeComplement { get; set; }
         public DetailsForWorkOrderCompletion[] detail { get; set; }
         public MaterialConsumedActualForWorkOrderCompletion[] materialConsumedActual { get; set; }
-        public ScrapForWorkOrderCompletion[] scrap{ get; set; }
+        public ScrapForWorkOrderCompletion[] scrap { get; set; }
 
     }
 
@@ -40,6 +40,8 @@ namespace SimaticArcorWebApi.Model.Custom.WorkOrderCompletion
         public string expirationDate { get; set; }
         public string memo { get; set; }
         public string empates { get; set; } = "0";
+        public string inventorystatus { get; set; } = "OBSERVACIÓN";
+
     }
 
     public class MaterialConsumedActualForWorkOrderCompletion

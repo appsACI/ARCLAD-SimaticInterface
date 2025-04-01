@@ -221,6 +221,22 @@ namespace SimaticArcorWebApi.Management
                 }
                 else
                 {
+                    logger.LogInformation($"MTU Exist");
+
+                    MaterialTrackingUnitProperty uniqueId = await SimaticMTUService.GetUniqueId(req.Id, ct);
+
+                    if (uniqueId != null)
+                    {
+                        var uniqueIdProperty = req.MaterialLotProperty
+                            .FirstOrDefault(p => p.Id == "uniqueId");
+
+                        if (uniqueId.PropertyValue == uniqueIdProperty.PropertyValue.ValueString)
+                        {
+                            logger.LogInformation($"The 'unique Id' of the MTU [{req.Id}] is the same, canceling update");
+                            return;
+                        }
+                    }
+
                     logger.LogInformation($"Updating MTU");
 
                     var restQuantity = quantity + Convert.ToDecimal(mtu.Quantity.QuantityValue);
