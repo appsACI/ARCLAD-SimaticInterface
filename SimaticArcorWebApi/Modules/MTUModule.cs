@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Common.Logging;
 using Endor.Core.Logger;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -12,21 +10,19 @@ using Nancy;
 using Nancy.Extensions;
 using Nancy.IO;
 using Nancy.ModelBinding;
-using Serilog;
 using SimaticArcorWebApi.Exceptions;
-using SimaticArcorWebApi.Modules;
 using SimaticArcorWebApi.Management;
 using SimaticArcorWebApi.Model.Config;
-using SimaticArcorWebApi.Model.Custom;
 using SimaticArcorWebApi.Model.Custom.G8Response;
 using SimaticArcorWebApi.Model.Custom.MaterialTrackingUnit;
 using SimaticArcorWebApi.Model.Simatic.MTU;
 using SimaticArcorWebApi.Modules.DCMovement;
-using SimaticArcorWebApi.Validators.Material;
-using SimaticArcorWebApi.Validators.Order;
 using SimaticArcorWebApi.Validators.MTU;
 using SimaticWebApi.Model.Custom.PrintLabel;
 using SimaticWebApi.Model.Custom.RDL;
+using Newtonsoft.Json;
+using SimaticWebApi.Model.Custom.TransactionalLog;
+using SimaticWebApi.Management;
 
 namespace SimaticArcorWebApi.Modules
 {
@@ -38,6 +34,7 @@ namespace SimaticArcorWebApi.Modules
         private ILogger<MTUModule> logger;
 
         public IOrderService OrderService { get; set; }
+        public ITransactionaLog TransacServices { get; set; }
 
         private NancyConfig config;
 
@@ -48,11 +45,12 @@ namespace SimaticArcorWebApi.Modules
 
         public ISimaticMTUService SimaticService { get; set; }
 
-        public MTUModule(IConfiguration configuration, IOrderService orderService, IMTUService mtuService, ISimaticMTUService simaticService) : base("api/mtus")
+        public MTUModule(IConfiguration configuration, IOrderService orderService, ITransactionaLog transacServices, IMTUService mtuService, ISimaticMTUService simaticService) : base("api/mtus")
         {
             if (logger == null) logger = ApplicationLogging.CreateLogger<MTUModule>();
 
             this.OrderService = orderService;
+            this.TransacServices = transacServices;
 
             config = new NancyConfig();
             configuration.GetSection("NancyConfig").Bind(config);
@@ -598,9 +596,48 @@ namespace SimaticArcorWebApi.Modules
                 if (!this.ModelValidationResult.IsValid)
                     return Negotiate.WithStatusCode(HttpStatusCode.BadRequest).WithModel(this.ModelValidationResult.FormattedErrors);
 
+                var materialData = req;
+
+                // Obtener los valores requeridos
+                string id = materialData?.Id;
+                string equipmentId = materialData?.Location?.EquipmentID;
+
+                // Buscar "Location" y "WorkOrder" en materialLotProperty
+                string locationValue = materialData?.MaterialLotProperty
+                    ?.FirstOrDefault(p => p.Id == "Location")?.PropertyValue?.ValueString;
+
+                string workOrderValue = materialData?.MaterialLotProperty
+                    ?.FirstOrDefault(p => p.Id == "WorkOrder")?.PropertyValue?.ValueString;
+
+                var newlog = new TransactionalLogModel
+                {
+                    Planta = "",
+                    Proceso = "",
+                    Maquina = equipmentId,
+                    Tipo = "UPDATE LOT",
+                    WorkOrders = workOrderValue,
+                    Lotes = id,
+                    Descripcion = "",
+                    Trim = "",
+                    NTrim = "",
+                    Cortes = "",
+                    Payload = JsonConvert.SerializeObject(req).ToString(),
+                };
+
                 await MTUService.UpdateLotAsync(req, ct);
 
+
+                newlog.ErrorMessage = "";
+                newlog.ReasonStatus = "Message Vacio";
+                newlog.Succeced = "true";
+                newlog.Comando = "updateLot";
+                newlog.ProgramaFuente = "OPCENTER";
+                newlog.ProgramaDestino = "OPCENTER";
+                newlog.URL = "update lot";
+                
+                await TransacServices.CreateTlog(newlog, ct);
                 return Negotiate.WithStatusCode(HttpStatusCode.Created);
+
             }
             catch (SimaticApiException e)
             {
