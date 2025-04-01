@@ -573,8 +573,8 @@ namespace SimaticArcorWebApi.Management
 
                                 oParamReq = new IOOrderOperationParameterRequirements
                                 {
-                                    ParameterNId = "Trim_" + contador,
-                                    ParameterName = "Trim " + contador,
+                                    ParameterNId = "Trim_" + contador.ToString("D3"),
+                                    ParameterName = "Trim " + contador.ToString("D3"),
                                     ParameterType = Char.ToUpperInvariant(p.Type[0]) + p.Type.ToLowerInvariant().Substring(1),
                                     ParameterTargetValue = result,
                                     //ParameterToleranceLow="0",
