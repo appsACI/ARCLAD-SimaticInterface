@@ -113,45 +113,23 @@ namespace SimaticArcorWebApi.Management
                 logger.LogInformation($"tiempos modificandos {prod}");
             }
 
+            if (prod.detail.Length > 0)
+            {
+                HashSet<string> approvedMachines = new HashSet<string> { "A01", "A02","A03","A04","A05","G01", "K01", "K02", "K03", "K04", "K05", "K06", "K07", "K08", "K09", "K10", "K11", "K12", "K13", "T01","T02", "T03","H04","H05","H06","H07","S01","S02","F01","W01","E01","E02","P01","P02" };
+
+                foreach (var item in prod.detail)
+                {
+                    if ((item.bom != null && item.bom.StartsWith("3")) ||
+                        (approvedMachines.Contains(item.binnumber)))
+                    {
+                        item.inventorystatus = "APROBADO";
+                    }
+                }
+            }
+
             logger.LogInformation($"Procesando ultimo tiempo de declaracion");
             await ProcesarUltimaDeclaracionAsync(infoOrder, infoWOrder, prod, ct);
-            //if (ultimaDeclaracion == null)
-            //{
-            //    logger.LogInformation($"Agregando ultimo tiempo de declaracion a la workorder [{infoOrder.NId}]");
-            //    DateTime fecha1 = Convert.ToDateTime(prod.endTime);
-            //    DateTimeOffset fechaOffset1 = new DateTimeOffset(fecha1);
-            //    DateTimeOffset fechaOffsetSumada = fechaOffset1.AddHours(5);
 
-            //    // Formatear la fecha en el formato deseado (ISO 8601 con zona horaria Z)
-            //    string fechaFormatoISO1 = fechaOffsetSumada.ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
-            //    List<Params> props = new List<Params>();
-            //    Params prop = new Params
-            //    {
-            //        ParameterNId = "ultimaDeclaracion",
-            //        ParameterTargetValue = fechaFormatoISO1
-            //    };
-            //    props.Add(prop);
-
-            //    await OrderService.AddWorkOrderParametersAsync(infoWOrder.Id, props.ToArray(), ct);
-
-            //}
-            //else
-            //{
-            //    logger.LogInformation($"Actualizando ultimo tiempo de declaracion a la workorder [{infoOrder.NId}]");
-
-            //    string Id = ultimaDeclaracion[0].Id;
-            //    DateTime fecha = Convert.ToDateTime(prod.endTime);
-            //    DateTimeOffset fechaOffset2 = new DateTimeOffset(fecha);
-            //    DateTimeOffset fechaOffsetSumada = fechaOffset2.AddHours(5);
-
-            //    // Formatear la fecha en el formato deseado (ISO 8601 con zona horaria Z)
-            //    string fechaFormatoISO2 = fechaOffsetSumada.ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
-            //    string Value = fechaFormatoISO2;
-
-            //    await OrderService.UpdateWorkOrderParametersAsync(Id, Value, ct);
-
-
-            //}
 
             var woId = await SimaticWorkOrderCompletionService.CreateWoCompletionAsync(prod, ct);
             logger.LogInformation($"Order completion {prod.woChildrenId} - {infoWOrder.NId} send successfully with ID '{woId}'");

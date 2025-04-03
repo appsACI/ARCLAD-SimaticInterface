@@ -598,44 +598,44 @@ namespace SimaticArcorWebApi.Modules
 
                 var materialData = req;
 
-                // Obtener los valores requeridos
-                string id = materialData?.Id;
-                string equipmentId = materialData?.Location?.EquipmentID;
+                //// Obtener los valores requeridos
+                //string id = materialData?.Id;
+                //string equipmentId = materialData?.Location?.EquipmentID;
 
-                // Buscar "Location" y "WorkOrder" en materialLotProperty
-                string locationValue = materialData?.MaterialLotProperty
-                    ?.FirstOrDefault(p => p.Id == "Location")?.PropertyValue?.ValueString;
+                //// Buscar "Location" y "WorkOrder" en materialLotProperty
+                //string locationValue = materialData?.MaterialLotProperty
+                //    ?.FirstOrDefault(p => p.Id == "Location")?.PropertyValue?.ValueString;
 
-                string workOrderValue = materialData?.MaterialLotProperty
-                    ?.FirstOrDefault(p => p.Id == "WorkOrder")?.PropertyValue?.ValueString;
+                //string workOrderValue = materialData?.MaterialLotProperty
+                //    ?.FirstOrDefault(p => p.Id == "WorkOrder")?.PropertyValue?.ValueString;
 
-                var newlog = new TransactionalLogModel
-                {
-                    Planta = "",
-                    Proceso = "",
-                    Maquina = equipmentId,
-                    Tipo = "UPDATE LOT",
-                    WorkOrders = workOrderValue,
-                    Lotes = id,
-                    Descripcion = "",
-                    Trim = "",
-                    NTrim = "",
-                    Cortes = "",
-                    Payload = JsonConvert.SerializeObject(req).ToString(),
-                };
+                //var newlog = new TransactionalLogModel
+                //{
+                //    Planta = "",
+                //    Proceso = "",
+                //    Maquina = equipmentId,
+                //    Tipo = "UPDATE LOT",
+                //    WorkOrders = workOrderValue,
+                //    Lotes = id,
+                //    Descripcion = "",
+                //    Trim = "",
+                //    NTrim = "",
+                //    Cortes = "",
+                //    Payload = JsonConvert.SerializeObject(req).ToString(),
+                //};
 
                 await MTUService.UpdateLotAsync(req, ct);
 
 
-                newlog.ErrorMessage = "";
-                newlog.ReasonStatus = "Message Vacio";
-                newlog.Succeced = "true";
-                newlog.Comando = "updateLot";
-                newlog.ProgramaFuente = "OPCENTER";
-                newlog.ProgramaDestino = "OPCENTER";
-                newlog.URL = "update lot";
+                //newlog.ErrorMessage = "";
+                //newlog.ReasonStatus = "Message Vacio";
+                //newlog.Succeced = "true";
+                //newlog.Comando = "updateLot";
+                //newlog.ProgramaFuente = "OPCENTER";
+                //newlog.ProgramaDestino = "OPCENTER";
+                //newlog.URL = "update lot";
                 
-                await TransacServices.CreateTlog(newlog, ct);
+                //await TransacServices.CreateTlog(newlog, ct);
                 return Negotiate.WithStatusCode(HttpStatusCode.Created);
 
             }
