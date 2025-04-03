@@ -176,7 +176,8 @@ namespace SimaticArcorWebApi.Management
             #region -- Pre-Creation status validations and other operations --
 
             // Check if Order exists
-            WorkOrder currentWorkOrder = await GetWorkOrderAsync(prod, ct);
+            WorkOrder WorkOrder = await SimaticService.GetWorkOrderByNIdAsync(prod.WorkOrder, false, ct);
+            WorkOrder currentWorkOrder = WorkOrder != null ? await GetWorkOrderAsync(WorkOrder.Id, ct) : null;
             Order currentOrder = await SimaticService.GetOrderByNIdAsync(prod.WorkOrder, false, ct);
             if (currentWorkOrder != null)
             {
@@ -222,7 +223,7 @@ namespace SimaticArcorWebApi.Management
                 // Order not found, so will create it all.
                 logger.LogInformation($"Order [{prod.Id}] - [{prod.WorkOrder}] does not exists, so it will be created!");
                 // Check if WorkOrder still exists!
-                currentWorkOrder = await GetWorkOrderAsync(prod, ct);
+                currentWorkOrder = WorkOrder != null ? await GetWorkOrderAsync(WorkOrder.Id, ct) : null;
                 if (currentWorkOrder != null)
                 {
                     await SimaticService.DeleteWorkOrderAsync(currentWorkOrder.Id, ct);
@@ -1019,13 +1020,13 @@ namespace SimaticArcorWebApi.Management
             //}
         }
 
-        private async Task<dynamic> GetWorkOrderAsync(ProductionRequest prod, CancellationToken ct)
+        private async Task<dynamic> GetWorkOrderAsync(string prod, CancellationToken ct)
         {
-            WorkOrderExtended woExt = await SimaticService.GetWorkOrderExtendedByOrderNIdAsync(prod.WorkOrder, false, ct);
+            WorkOrderExtended woExt = await SimaticService.GetWorkOrderExtendedByOrderNIdAsync(prod, false, ct);
 
             if (woExt == null)
             {
-                logger.LogWarning($"Work Order extended [{prod.WorkOrder}] was not found.");
+                logger.LogWarning($"Work Order extended [{prod}] was not found.");
                 return null;
             }
 
@@ -1035,7 +1036,7 @@ namespace SimaticArcorWebApi.Management
 
             if (wo == null)
             {
-                logger.LogWarning($"Work Order [{prod.WorkOrder}] was not found.");
+                logger.LogWarning($"Work Order [{prod}] was not found.");
                 return null;
             }
 
