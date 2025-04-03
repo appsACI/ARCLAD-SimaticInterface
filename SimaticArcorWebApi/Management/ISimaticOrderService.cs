@@ -61,7 +61,7 @@ namespace SimaticArcorWebApi.Management
 
         Task ClearWorkOrderActualTime(string id, DateTime plannedInit, DateTime plannedFinish, CancellationToken token);
 
-        Task<dynamic> GetWorkOrderOperationBySequenceAsync(string secuence, CancellationToken token);
+        Task<dynamic> GetWorkOrderOperationBySequenceAsync(string secuence,string WOId, CancellationToken token);
 
         Task<dynamic> GetWorkOrderUserFieldsByID(string id, CancellationToken token);
 

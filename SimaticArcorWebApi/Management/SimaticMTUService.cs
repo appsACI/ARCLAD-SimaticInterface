@@ -2,31 +2,21 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Endor.Core.Logger;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using SimaticArcorWebApi.Exceptions;
 using SimaticArcorWebApi.Helpers;
 using SimaticArcorWebApi.HttpClient;
 using SimaticArcorWebApi.Model.Constants;
-using SimaticArcorWebApi.Model.Custom;
 using SimaticArcorWebApi.Model.Custom.MaterialTrackingUnit;
 using SimaticArcorWebApi.Model.Custom.PalletReception;
-using SimaticArcorWebApi.Model.Custom.RoadMap;
-using SimaticArcorWebApi.Model.Simatic;
-using SimaticArcorWebApi.Model.Simatic.BOM;
-using SimaticArcorWebApi.Model.Simatic.Material;
 using SimaticArcorWebApi.Model.Simatic.MaterialLot;
 using SimaticArcorWebApi.Model.Simatic.MTU;
-using SimaticArcorWebApi.Model.Simatic.Order;
-using SimaticArcorWebApi.Model.Simatic.RoadMap;
 using SimaticArcorWebApi.Modules.DCMovement;
 using SimaticWebApi.Model.Custom.PrintLabel;
 using SimaticWebApi.Model.Custom.RDL;
@@ -111,6 +101,7 @@ namespace SimaticArcorWebApi.Management
         #region MTU
 
         #region GetMTU
+
         public async Task<dynamic> GetMTUAsync(string nid, CancellationToken token)
         {
             using (var client = new AuditableHttpClient(logger))
@@ -124,7 +115,7 @@ namespace SimaticArcorWebApi.Management
                 // Add the Authorization header with the AccessToken.
                 client.DefaultRequestHeaders.Add("Authorization", "Bearer " + await SimaticService.GetAccessToken(token));
 
-                HttpResponseMessage response = await client.GetAsync($"sit-svc/Application/Material/odata/MaterialTrackingUnit?$filter=NId eq '{nid}'", token);
+                HttpResponseMessage response = await client.GetAsync($"sit-svc/Application/Material/odata/MaterialTrackingUnit?$filter=NId eq '{nid}'&$select=Id,NId,MaterialNId,Quantity,EquipmentNId ", token);
 
                 SimaticServerHelper.CheckFaultResponse(token, response, logger);
 
@@ -234,14 +225,6 @@ namespace SimaticArcorWebApi.Management
             }
         }
 
-        /// <summary>
-        /// Finds the last MTU created by Lot, Equipment and Quantity
-        /// </summary>
-        /// <param name="materialLotId"></param>
-        /// <param name="equipmentNId"></param>
-        /// <param name="quantity"></param>
-        /// <param name="token"></param>
-        /// <returns></returns>
         public async Task<string> GetLastCreatedMTUByMaterialLotIdAndEquipmentNIdAsync(string materialLotId, string equipmentNId, double quantity, CancellationToken token)
         {
             using (var client = new AuditableHttpClient(logger))
@@ -283,7 +266,7 @@ namespace SimaticArcorWebApi.Management
                 // Add the Authorization header with the AccessToken.
                 client.DefaultRequestHeaders.Add("Authorization", "Bearer " + await SimaticService.GetAccessToken(token));
 
-                HttpResponseMessage response = await client.GetAsync($"sit-svc/Application/Material/odata/MaterialTrackingUnitProperty?$filter=MaterialTrackingUnit_Id%20eq%20{id}&$expand=MaterialTrackingUnit", token);
+                HttpResponseMessage response = await client.GetAsync($"sit-svc/Application/Material/odata/MaterialTrackingUnitProperty?$filter=MaterialTrackingUnit_Id eq {id}&$select=NId,PropertyValue", token);
 
                 SimaticServerHelper.CheckFaultResponse(token, response, logger);
 
@@ -316,7 +299,7 @@ namespace SimaticArcorWebApi.Management
                 // URL para extraer solo las Propiedades de Defectos http://arcloud-opc/sit-svc/Application/Material/odata/MaterialTrackingUnitProperty?$filter=MaterialTrackingUnit_Id eq 303e1f5e-941c-ef11-b847-020017035491 and contains(NId, 'Defecto')
                 logger.LogInformation($"Start search defects");
 
-                var url = $"sit-svc/Application/Material/odata/MaterialTrackingUnitProperty?$filter=MaterialTrackingUnit/Id eq {Id} and contains(NId, 'Defecto')";
+                var url = $"sit-svc/Application/Material/odata/MaterialTrackingUnitProperty?$filter=MaterialTrackingUnit/Id eq {Id} and contains(NId, 'Defecto')&$select=NId,PropertyValue";
 
                 HttpResponseMessage response = await client.GetAsync(url, token);
 
@@ -350,7 +333,7 @@ namespace SimaticArcorWebApi.Management
 
 
 
-                var url = $"sit-svc/Application/Material/odata/MaterialTrackingUnitProperty?$filter=MaterialTrackingUnit/Id eq {Id} and contains(NId, 'MaquinaDecreacion')";
+                var url = $"sit-svc/Application/Material/odata/MaterialTrackingUnitProperty?$filter=MaterialTrackingUnit/Id eq {Id} and contains(NId, 'MaquinaDecreacion')&$select=PropertyValue";
 
                 HttpResponseMessage response = await client.GetAsync(url, token);
 
@@ -384,7 +367,7 @@ namespace SimaticArcorWebApi.Management
 
 
 
-                var url = $"sit-svc/Application/Material/odata/MaterialTrackingUnitProperty?$filter=MaterialTrackingUnit/Id eq {Id} and contains(NId, 'uniqueId')";
+                var url = $"sit-svc/Application/Material/odata/MaterialTrackingUnitProperty?$filter=MaterialTrackingUnit/Id eq {Id} and contains(NId, 'uniqueId')&$select=PropertyValue";
 
                 HttpResponseMessage response = await client.GetAsync(url, token);
 
@@ -450,7 +433,7 @@ namespace SimaticArcorWebApi.Management
 
                 // URL para extraer solo las Propiedades de Defectos http://arcloud-opc/sit-svc/Application/Material/odata/MaterialTrackingUnitProperty?$filter=MaterialTrackingUnit_Id eq 303e1f5e-941c-ef11-b847-020017035491 and contains(NId, 'Defecto')
 
-                var url = $"sit-svc/Application/Material/odata/MaterialTrackingUnitProperty?$filter=MaterialTrackingUnit/Id eq {Id} and contains(NId, 'WorkOrder')";
+                var url = $"sit-svc/Application/Material/odata/MaterialTrackingUnitProperty?$filter=MaterialTrackingUnit/Id eq {Id} and contains(NId, 'WorkOrder')&$select=PropertyValue";
 
                 HttpResponseMessage response = await client.GetAsync(url, token);
 
@@ -482,8 +465,6 @@ namespace SimaticArcorWebApi.Management
                 // Add the Authorization header with the AccessToken.
                 client.DefaultRequestHeaders.Add("Authorization", "Bearer " + await SimaticService.GetAccessToken(token));
 
-                
-
                 var url = $"sit-svc/Application/MatDeclarationApp/odata/GetPrinter(function=@x)?@x=%7B%22EquipmentNId%22%3A%22{equipmentNId}%22%7D";
 
                 HttpResponseMessage response = await client.GetAsync(url, token);
@@ -502,7 +483,6 @@ namespace SimaticArcorWebApi.Management
                   }, token);
             }
         }
-
 
         #endregion
 
@@ -679,14 +659,6 @@ namespace SimaticArcorWebApi.Management
             }
         }
 
-        /// <summary>
-        /// Executes PIMaterial_MoveMTU method, basically used for Split.
-        /// </summary>
-        /// <param name="id"></param>
-        /// <param name="quantity"></param>
-        /// <param name="equipment"></param>
-        /// <param name="token"></param>
-        /// <returns></returns>
         public async Task MoveMaterialTrackingUnitAsync(Guid id, double quantity, string equipment, CancellationToken token)
         {
             using (var client = new AuditableHttpClient(logger))
@@ -721,13 +693,6 @@ namespace SimaticArcorWebApi.Management
             }
         }
 
-        /// <summary>
-        /// Move MTU to Equipment
-        /// </summary>
-        /// <param name="id"></param>
-        /// <param name="equipment"></param>
-        /// <param name="token"></param>
-        /// <returns></returns>
         public async Task MoveMaterialTrackingUnitToEquipmentAsync(Guid id, string equipment, CancellationToken token)
         {
             using (var client = new AuditableHttpClient(logger))
@@ -1075,7 +1040,7 @@ namespace SimaticArcorWebApi.Management
                 // Add the Authorization header with the AccessToken.
                 client.DefaultRequestHeaders.Add("Authorization", "Bearer " + await SimaticService.GetAccessToken(token));
 
-                HttpResponseMessage response = await client.GetAsync($"sit-svc/Application/Material/odata/MaterialLot?$filter=NId eq '{nid}'", token);
+                HttpResponseMessage response = await client.GetAsync($"sit-svc/Application/Material/odata/MaterialLot?$filter=NId eq '{nid}'&$SELECT=Id,NId", token);
 
                 SimaticServerHelper.CheckFaultResponse(token, response, logger);
 
@@ -1426,7 +1391,7 @@ namespace SimaticArcorWebApi.Management
                 var json = JsonConvert.SerializeObject(data);
                 //logger.LogInformation($"json enviado[{json}].");
 
-                var response = await client.PostAsync("sit-svc/application/FBRDL/odata/requirements",
+                var response = await client.PostAsync("sit-svc/application/FBRDL/odata/RequirementsV2",
                 new StringContent(json, Encoding.UTF8, "application/json"), token).ConfigureAwait(true);
                 SimaticServerHelper.CheckFaultResponse(token, response, logger);
                 return await response.Content.ReadAsStringAsync()
