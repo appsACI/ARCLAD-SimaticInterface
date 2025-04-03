@@ -816,9 +816,9 @@ namespace SimaticArcorWebApi.Management
                             }
 
                             #endregion
-                            logger.LogInformation($"Found id [{mtu.Id}] for MTU [{item}] procced Print Label ");
+                            logger.LogInformation($"Found Nid [{mtu.NId}] for MTU [{item}] procced Print Label ");
                             await PrintLabel(label, ct);
-                            logger.LogInformation($"Found id [{mtu.Id}] for MTU [{item}] procced Unassign ");
+                            logger.LogInformation($"Found Nid [{mtu.NId}] for MTU [{item}] procced Unassign ");
                             await SimaticMTUService.UnassignMTURequired(mtuReq.Id, ct);
                             await SimaticMTUService.SetMaterialTrackingUnitStatus(mtu.Id, "Liberar", ct);
                             logger.LogInformation($"Mtu unassing OK");
@@ -1162,7 +1162,7 @@ namespace SimaticArcorWebApi.Management
                 //Get Material by ID
                 Material mat = await SimaticMaterialService.GetMaterialByNIdAsync(req.LabelTagsMezclas?.TagMaterial, false, true, ct);
 
-                MaterialTrackingUnit mtu = await SimaticMTUService.GetMTUAsync(req.LabelTagsMezclas?.TagLote, ct);
+                //MaterialTrackingUnit mtu = await SimaticMTUService.GetMTUAsync(req.LabelTagsMezclas?.TagLote, ct);
 
                 req.LabelTagsMezclas.TagUom = mat.UoMNId;
                 req.LabelTagsMezclas.TagDescripcion = mat.Name;

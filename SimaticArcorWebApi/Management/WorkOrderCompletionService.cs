@@ -73,8 +73,8 @@ namespace SimaticArcorWebApi.Management
             #region GET DATA
             Order infoOrder = await OrderService.GetOrderByNameAsync(name, ct);
             WorkOrder infoWOrder = await OrderService.GetWorkOrderByNIdAsync(infoOrder.NId, false, ct);
-            WorkOrderOperation infoWOrderOp = await OrderService.GetWorkOrderOperationBySequenceAsync(prod.startOperation.ToString(), ct);
-            WorkOrderExtended infoWOrderExtend = await OrderService.GetWorkOrderExtendedByOrderNIdAsync(infoOrder.NId, false, ct);
+            WorkOrderOperation infoWOrderOp = await OrderService.GetWorkOrderOperationBySequenceAsync(prod.startOperation.ToString(), infoWOrder.Id, ct);
+            WorkOrderExtended infoWOrderExtend = await OrderService.GetWorkOrderExtendedByOrderNIdAsync(infoWOrder.Id, false, ct);
             var ultimaDeclaracion = await OrderService.GetWorkOrderParameterUltimaDeclarion(infoWOrder.Id, ct);
             ProductionTime[] timeProd = await SimaticWorkOrderCompletionService.GetProductionTimeAsync(infoOrder.NId, ct);
             #endregion
@@ -213,8 +213,8 @@ namespace SimaticArcorWebApi.Management
 
             Order infoOrder = await OrderService.GetOrderByNameAsync(name, ct);
             WorkOrder infoWOrder = await OrderService.GetWorkOrderByNIdAsync(infoOrder.NId, false, ct);
-            WorkOrderExtended infoWOrderExtend = await OrderService.GetWorkOrderExtendedByOrderNIdAsync(infoOrder.NId, false, ct);
-            WorkOrderOperation infoWOrderOp = await OrderService.GetWorkOrderOperationBySequenceAsync(prod.startOperation.ToString(), ct);
+            WorkOrderExtended infoWOrderExtend = await OrderService.GetWorkOrderExtendedByOrderNIdAsync(infoWOrder.Id, false, ct);
+            WorkOrderOperation infoWOrderOp = await OrderService.GetWorkOrderOperationBySequenceAsync(prod.startOperation.ToString(), infoWOrder.Id, ct);
             var ultimaDeclaracion = await OrderService.GetWorkOrderParameterUltimaDeclarion(infoWOrder.Id, ct);
             ProductionTime[] timeProd = await SimaticWorkOrderCompletionService.GetProductionTimeAsync(infoOrder.NId, ct);
 

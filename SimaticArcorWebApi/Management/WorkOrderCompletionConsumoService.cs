@@ -71,11 +71,11 @@ namespace SimaticArcorWebApi.Management
             string name = Convert.ToString(prod.woChildrenId);
 
             Order infoOrder = await OrderService.GetOrderByNameAsync(name, ct);
-            WorkOrderOperation infoWOrderOp = await OrderService.GetWorkOrderOperationBySequenceAsync(prod.startOperation.ToString(), ct);
-            // This operation always recreates an Order, this is IOInteroperability standard behaviour.
+            WorkOrder infoWOrder = await OrderService.GetWorkOrderByNIdAsync(infoOrder.NId, false, ct);
+            WorkOrderOperation infoWOrderOp = await OrderService.GetWorkOrderOperationBySequenceAsync(prod.startOperation.ToString(), infoWOrder.Id, ct);
+            
             woId = await SimaticWorkOrderCompletionService.CreateWoCompletionConsumoAsync(prod);
             logger.LogInformation($"Order completion only consum [{prod.woChildrenId}] - [{prod.woChildrenId}] created/recreated successfully with ID '{woId}'");
-
 
             #region TRANSACTIONAL LOG
 

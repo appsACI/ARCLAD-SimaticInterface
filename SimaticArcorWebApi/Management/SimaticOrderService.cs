@@ -343,7 +343,7 @@ namespace SimaticArcorWebApi.Management
                 // Add the Authorization header with the AccessToken.
                 client.DefaultRequestHeaders.Add("Authorization", "Bearer " + await SimaticService.GetAccessToken(token));
 
-                var url = $"sit-svc/application/PICore/odata/WorkOrderExtended?$filter=OrderNId eq '{id}'";
+                var url = $"sit-svc/application/PICore/odata/WorkOrderExtended?$filter=WorkOrder_Id eq {id}";
 
                 HttpResponseMessage response = await client.GetAsync(url, token);
 
@@ -511,7 +511,7 @@ namespace SimaticArcorWebApi.Management
             }
         }
 
-        public async Task<dynamic> GetOrderByNameAsync(string id, CancellationToken token)
+        public async Task<dynamic> GetOrderByNameAsync(string name, CancellationToken token)
         {
             using (var client = new AuditableHttpClient(logger))
             {
@@ -524,7 +524,7 @@ namespace SimaticArcorWebApi.Management
                 // Add the Authorization header with the AccessToken.
                 client.DefaultRequestHeaders.Add("Authorization", "Bearer " + await SimaticService.GetAccessToken(token));
 
-                var url = $"sit-svc/application/PICore/odata/Order?$filter=Name eq '{id}'";
+                var url = $"sit-svc/application/PICore/odata/Order?$filter=Name eq '{name}'";
 
                 HttpResponseMessage response = await client.GetAsync(url, token);
 
@@ -538,7 +538,7 @@ namespace SimaticArcorWebApi.Management
                       if (result.value.Count >= 1)
                           return ((IList<Order>)result.value.ToObject<Order[]>()).First();
 
-                      dynamic errorMessage = new { Error = $"Order [{id}] not found." };
+                      dynamic errorMessage = new { Error = $"Order [{name}] not found." };
                       throw new SimaticApiException(Nancy.HttpStatusCode.NotFound, errorMessage);
                   }, token);
             }
@@ -692,7 +692,7 @@ namespace SimaticArcorWebApi.Management
             }
         }
 
-        public async Task<dynamic> GetWorkOrderOperationBySequenceAsync(string secuence, CancellationToken token)
+        public async Task<dynamic> GetWorkOrderOperationBySequenceAsync(string secuence,string WOId, CancellationToken token)
         {
             using (var client = new AuditableHttpClient(logger))
             {
@@ -705,7 +705,7 @@ namespace SimaticArcorWebApi.Management
                 // Add the Authorization header with the AccessToken.
                 client.DefaultRequestHeaders.Add("Authorization", "Bearer " + await SimaticService.GetAccessToken(token));
 
-                var url = $"sit-svc/application/PICore/odata/WorkOrderOperation?$filter=Sequence eq {secuence}";
+                var url = $"sit-svc/application/PICore/odata/WorkOrderOperation?$filter=Sequence eq {secuence}and WorkOrder_Id eq {WOId}";
 
                 HttpResponseMessage response = await client.GetAsync(url, token);
 
