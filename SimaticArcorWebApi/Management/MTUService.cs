@@ -24,6 +24,8 @@ using SimaticArcorWebApi.Model.Simatic.Equipment;
 using Nancy;
 using SimaticWebApi.Model.Custom.PrintLabel;
 using SimaticWebApi.Model.Custom.RDL;
+using Newtonsoft.Json.Linq;
+using SimaticWebApi.Model.Custom.TransactionalLog;
 
 namespace SimaticArcorWebApi.Management
 {
@@ -261,6 +263,7 @@ namespace SimaticArcorWebApi.Management
                 }
 
                 await CreateOrUpdateMTUProperties(mtu.Id, req.MaterialLotProperty, ct);
+
             }
         }
 
