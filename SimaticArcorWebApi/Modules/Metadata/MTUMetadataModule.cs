@@ -215,17 +215,6 @@ namespace SimaticArcorWebApi.Modules.Metadata
                 )
             );
 
-            Describe["GetLotePadreProp"] = description => description.AsSwagger(
-                with => with.Operation(
-                    op => op.OperationId("GetLotePadreProp")
-                        .Tag("Material Tracking Unit")
-                        .Parameter(p => p.Name("MTU").Description("Identificador del parametro MTU").IsRequired().In(ParameterIn.Path))
-                        
-                        .Summary("Consultar la propiedad de lote padre de las MTU")
-                        .Response((int)HttpStatusCode.Accepted, r => r.Description("Lote padre de la mtu").Schema<string>())
-                )
-            );
-
 
         }
 

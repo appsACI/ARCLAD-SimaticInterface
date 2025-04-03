@@ -270,7 +270,7 @@ namespace SimaticArcorWebApi.Management
             }
         }
 
-        public async Task<dynamic> GetMTUPropertiesAsync(string id, CancellationToken token)
+        public async Task<dynamic> GetMTUPropertiesAsync(Guid id, CancellationToken token)
         {
             using (var client = new AuditableHttpClient(logger))
             {
@@ -283,7 +283,7 @@ namespace SimaticArcorWebApi.Management
                 // Add the Authorization header with the AccessToken.
                 client.DefaultRequestHeaders.Add("Authorization", "Bearer " + await SimaticService.GetAccessToken(token));
 
-                HttpResponseMessage response = await client.GetAsync($"sit-svc/Application/Material/odata/MaterialTrackingUnitProperty?$filter=MaterialTrackingUnit_Id%20eq%20{id}&$expand=MaterialTrackingUnit,SegregationTags", token);
+                HttpResponseMessage response = await client.GetAsync($"sit-svc/Application/Material/odata/MaterialTrackingUnitProperty?$filter=MaterialTrackingUnit_Id%20eq%20{id}&$expand=MaterialTrackingUnit", token);
 
                 SimaticServerHelper.CheckFaultResponse(token, response, logger);
 
@@ -300,7 +300,7 @@ namespace SimaticArcorWebApi.Management
             }
         }
 
-        public async Task<dynamic> GetPropertiesDefectos(string Id, CancellationToken token)
+        public async Task<dynamic> GetPropertiesDefectos(Guid Id, CancellationToken token)
         {
             using (var client = new AuditableHttpClient(logger))
             {
@@ -316,7 +316,7 @@ namespace SimaticArcorWebApi.Management
                 // URL para extraer solo las Propiedades de Defectos http://arcloud-opc/sit-svc/Application/Material/odata/MaterialTrackingUnitProperty?$filter=MaterialTrackingUnit_Id eq 303e1f5e-941c-ef11-b847-020017035491 and contains(NId, 'Defecto')
                 logger.LogInformation($"Start search defects");
 
-                var url = $"sit-svc/Application/Material/odata/MaterialTrackingUnitProperty?$filter=MaterialTrackingUnit/NId eq '{Id}' and contains(NId, 'Defecto')";
+                var url = $"sit-svc/Application/Material/odata/MaterialTrackingUnitProperty?$filter=MaterialTrackingUnit/Id eq {Id} and contains(NId, 'Defecto')";
 
                 HttpResponseMessage response = await client.GetAsync(url, token);
 
@@ -335,7 +335,7 @@ namespace SimaticArcorWebApi.Management
             }
         }
 
-        public async Task<dynamic> GetMaquinaDeCreacion(string Id, CancellationToken token)
+        public async Task<dynamic> GetMaquinaDeCreacion(Guid Id, CancellationToken token)
         {
             using (var client = new AuditableHttpClient(logger))
             {
@@ -350,7 +350,7 @@ namespace SimaticArcorWebApi.Management
 
 
 
-                var url = $"sit-svc/Application/Material/odata/MaterialTrackingUnitProperty?$filter=MaterialTrackingUnit/NId eq '{Id}' and contains(NId, 'MaquinaDecreacion')";
+                var url = $"sit-svc/Application/Material/odata/MaterialTrackingUnitProperty?$filter=MaterialTrackingUnit/Id eq {Id} and contains(NId, 'MaquinaDecreacion')";
 
                 HttpResponseMessage response = await client.GetAsync(url, token);
 
@@ -369,7 +369,7 @@ namespace SimaticArcorWebApi.Management
             }
         }
 
-        public async Task<dynamic> GetUniqueId(string NId, CancellationToken token)
+        public async Task<dynamic> GetUniqueId(Guid Id, CancellationToken token)
         {
             using (var client = new AuditableHttpClient(logger))
             {
@@ -384,7 +384,7 @@ namespace SimaticArcorWebApi.Management
 
 
 
-                var url = $"sit-svc/Application/Material/odata/MaterialTrackingUnitProperty?$filter=MaterialTrackingUnit/NId eq '{NId}' and contains(NId, 'uniqueId')";
+                var url = $"sit-svc/Application/Material/odata/MaterialTrackingUnitProperty?$filter=MaterialTrackingUnit/Id eq {Id} and contains(NId, 'uniqueId')";
 
                 HttpResponseMessage response = await client.GetAsync(url, token);
 
@@ -403,7 +403,7 @@ namespace SimaticArcorWebApi.Management
             }
         }
 
-        public async Task<dynamic> GetLotePadreProp(string NId, CancellationToken token)
+        public async Task<dynamic> GetLotePadreProp(Guid Id, CancellationToken token)
         {
             using (var client = new AuditableHttpClient(logger))
             {
@@ -416,7 +416,7 @@ namespace SimaticArcorWebApi.Management
                 // Add the Authorization header with the AccessToken.
                 client.DefaultRequestHeaders.Add("Authorization", "Bearer " + await SimaticService.GetAccessToken(token));
                 
-                var url = $"sit-svc/Application/Material/odata/MaterialTrackingUnitProperty?$filter=MaterialTrackingUnit/NId eq '{NId}' and contains(NId, 'lote')";
+                var url = $"sit-svc/Application/Material/odata/MaterialTrackingUnitProperty?$filter=MaterialTrackingUnit/Id eq '{Id}' and contains(NId, 'lote')";
 
                 HttpResponseMessage response = await client.GetAsync(url, token);
 
@@ -435,7 +435,7 @@ namespace SimaticArcorWebApi.Management
             }
         }
 
-        public async Task<dynamic> GetPropertyWorkOrder(string Id, CancellationToken token)
+        public async Task<dynamic> GetPropertyWorkOrder(Guid Id, CancellationToken token)
         {
             using (var client = new AuditableHttpClient(logger))
             {
@@ -450,7 +450,7 @@ namespace SimaticArcorWebApi.Management
 
                 // URL para extraer solo las Propiedades de Defectos http://arcloud-opc/sit-svc/Application/Material/odata/MaterialTrackingUnitProperty?$filter=MaterialTrackingUnit_Id eq 303e1f5e-941c-ef11-b847-020017035491 and contains(NId, 'Defecto')
 
-                var url = $"sit-svc/Application/Material/odata/MaterialTrackingUnitProperty?$filter=MaterialTrackingUnit/NId eq '{Id}' and contains(NId, 'WorkOrder')";
+                var url = $"sit-svc/Application/Material/odata/MaterialTrackingUnitProperty?$filter=MaterialTrackingUnit/Id eq {Id} and contains(NId, 'WorkOrder')";
 
                 HttpResponseMessage response = await client.GetAsync(url, token);
 
@@ -615,7 +615,7 @@ namespace SimaticArcorWebApi.Management
             }
         }
 
-        public async Task SetMaterialTrackingUnitQuantity(string id, string uoMnId, double quantity, CancellationToken token)
+        public async Task SetMaterialTrackingUnitQuantity(Guid id, string uoMnId, double quantity, CancellationToken token)
         {
             using (var client = new AuditableHttpClient(logger))
             {
@@ -647,7 +647,7 @@ namespace SimaticArcorWebApi.Management
             }
         }
 
-        public async Task SetMaterialTrackingUnitStatus(string id, string verb, CancellationToken token)
+        public async Task SetMaterialTrackingUnitStatus(Guid id, string verb, CancellationToken token)
         {
             using (var client = new AuditableHttpClient(logger))
             {
@@ -687,7 +687,7 @@ namespace SimaticArcorWebApi.Management
         /// <param name="equipment"></param>
         /// <param name="token"></param>
         /// <returns></returns>
-        public async Task MoveMaterialTrackingUnitAsync(string id, double quantity, string equipment, CancellationToken token)
+        public async Task MoveMaterialTrackingUnitAsync(Guid id, double quantity, string equipment, CancellationToken token)
         {
             using (var client = new AuditableHttpClient(logger))
             {
@@ -728,7 +728,7 @@ namespace SimaticArcorWebApi.Management
         /// <param name="equipment"></param>
         /// <param name="token"></param>
         /// <returns></returns>
-        public async Task MoveMaterialTrackingUnitToEquipmentAsync(string id, string equipment, CancellationToken token)
+        public async Task MoveMaterialTrackingUnitToEquipmentAsync(Guid id, string equipment, CancellationToken token)
         {
             using (var client = new AuditableHttpClient(logger))
             {
@@ -760,7 +760,7 @@ namespace SimaticArcorWebApi.Management
             }
         }
 
-        public async Task CreateMaterialTrackingUnitProperties(string id, MTURequestMaterialLotProperty[] properties, CancellationToken token)
+        public async Task CreateMaterialTrackingUnitProperties(Guid id, MTURequestMaterialLotProperty[] properties, CancellationToken token)
         {
             using (var client = new AuditableHttpClient(logger))
             {
@@ -865,7 +865,7 @@ namespace SimaticArcorWebApi.Management
             }
         }
 
-        public async Task UpdateMaterialTrackingUnitProperties(string id, MTURequestMaterialLotProperty[] properties, CancellationToken token)
+        public async Task UpdateMaterialTrackingUnitProperties(Guid id, MTURequestMaterialLotProperty[] properties, CancellationToken token)
         {
             using (var client = new AuditableHttpClient(logger))
             {
@@ -910,7 +910,7 @@ namespace SimaticArcorWebApi.Management
         /// <param name="description"></param>
         /// <param name="token"></param>
         /// <returns></returns>
-        public async Task UpdateMaterialTrackingUnitAsync(string id, string name, string description, string status, CancellationToken token)
+        public async Task UpdateMaterialTrackingUnitAsync(Guid id, string name, string description, string status, CancellationToken token)
         {
             using (var client = new AuditableHttpClient(logger))
             {

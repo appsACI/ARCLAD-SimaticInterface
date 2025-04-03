@@ -40,7 +40,7 @@ namespace SimaticArcorWebApi.Model.Custom.WorkOrderCompletion
         public DateTime expirationDate { get; set; }
         public string memo { get; set; }
         public string empates { get; set; } = "0";
-        public string inventorystatus { get; set; } = "OBSERVACIÓN";
+        public string inventorystatus { get; set; } = "APROBADO";
     }
 
     public class MaterialConsumedActualForWorkOrderCompletionVinilos
