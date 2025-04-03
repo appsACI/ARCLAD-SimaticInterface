@@ -4,7 +4,7 @@ namespace SimaticArcorWebApi.Model.Simatic.MTU
 {
   public class MaterialTrackingUnit
   {
-    public string Id { get; set; }
+    public Guid Id { get; set; }
     public string AId { get; set; }
     public bool IsFrozen { get; set; }
     public int ConcurrencyVersion { get; set; }

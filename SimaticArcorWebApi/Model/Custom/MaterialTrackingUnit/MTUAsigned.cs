@@ -1,4 +1,5 @@
 ﻿using SimaticArcorWebApi.Management;
+using System;
 
 namespace SimaticArcorWebApi.Model.Custom.MaterialTrackingUnit
 {
@@ -39,7 +40,7 @@ namespace SimaticArcorWebApi.Model.Custom.MaterialTrackingUnit
 
     public class MTUId
     {
-        public string Id { get; set; }
+        public Guid Id { get; set; }
     }
 
     public class MTUPropiedadesDefectos

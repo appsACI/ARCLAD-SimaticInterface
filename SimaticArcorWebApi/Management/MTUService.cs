@@ -225,7 +225,7 @@ namespace SimaticArcorWebApi.Management
                 {
                     logger.LogInformation($"MTU Exist");
 
-                    MaterialTrackingUnitProperty uniqueId = await SimaticMTUService.GetUniqueId(req.Id, ct);
+                    MaterialTrackingUnitProperty uniqueId = await SimaticMTUService.GetUniqueId(mtu.Id, ct);
 
                     if (uniqueId != null)
                     {
@@ -528,9 +528,9 @@ namespace SimaticArcorWebApi.Management
                                 }
                             }
                         }
-                        MaterialTrackingUnitProperty workOrder = await SimaticMTUService.GetPropertyWorkOrder(item, ct);
-                        IList<MTUPropiedadesDefectos> defectos = await GetPropertiesDefectos(item, ct);
-                        MaterialTrackingUnitProperty maquinaDeCreacion = await SimaticMTUService.GetMaquinaDeCreacion(item, ct);
+                        MaterialTrackingUnitProperty workOrder = await SimaticMTUService.GetPropertyWorkOrder(mtu.Id, ct);
+                        IList<MTUPropiedadesDefectos> defectos = await GetPropertiesDefectos(mtu.Id, ct);
+                        MaterialTrackingUnitProperty maquinaDeCreacion = await SimaticMTUService.GetMaquinaDeCreacion(mtu.Id, ct);
 
                         if (mtu != null)
                         {
@@ -837,7 +837,7 @@ namespace SimaticArcorWebApi.Management
 
         }
 
-        public async Task<dynamic> GetLotePadreProp(string req, CancellationToken ct)
+        public async Task<dynamic> GetLotePadreProp(Guid req, CancellationToken ct)
         {
             logger.LogInformation($"Reciveb MTUNid");
 
@@ -858,7 +858,7 @@ namespace SimaticArcorWebApi.Management
             }
         }
 
-        public async Task CreateOrUpdateMTUProperties(string id, MTURequestMaterialLotProperty[] requestProperties, CancellationToken token)
+        public async Task CreateOrUpdateMTUProperties(Guid id, MTURequestMaterialLotProperty[] requestProperties, CancellationToken token)
         {
             logger.LogInformation($"Material tracking unit :: updating/creating properties.");
 
@@ -1061,7 +1061,7 @@ namespace SimaticArcorWebApi.Management
             await SimaticMTUService.HandleLotFromJDE(req, ct);
         }
 
-        public async Task<IList<MTUPropiedadesDefectos>> GetPropertiesDefectos(string Id, CancellationToken ct)
+        public async Task<IList<MTUPropiedadesDefectos>> GetPropertiesDefectos(Guid Id, CancellationToken ct)
         {
             IList<MTUPropiedadesDefectos> PropiedadesDefectosMTU = new List<MTUPropiedadesDefectos>();
             IList<MaterialTrackingUnitProperty> MaterialTrackingUnitPropertyMTU = new List<MaterialTrackingUnitProperty>();
@@ -1070,7 +1070,7 @@ namespace SimaticArcorWebApi.Management
 
             logger.LogInformation($"A new Order Operation data is received, analysing Order ID [{Id}] WorkOrder [{Id}] for Final Material [{Id}] ...");
 
-            if (!string.IsNullOrEmpty(Id))
+            if (Id != null)
             {
                 MaterialTrackingUnitPropertyMTU = await SimaticMTUService.GetPropertiesDefectos(Id, ct);
 

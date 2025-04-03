@@ -113,19 +113,19 @@ namespace SimaticArcorWebApi.Management
                 logger.LogInformation($"tiempos modificandos {prod}");
             }
 
-            if (prod.detail.Length > 0)
-            {
-                HashSet<string> approvedMachines = new HashSet<string> { "A01", "A02","A03","A04","A05","G01", "K01", "K02", "K03", "K04", "K05", "K06", "K07", "K08", "K09", "K10", "K11", "K12", "K13", "T01","T02", "T03","H04","H05","H06","H07","S01","S02","F01","W01","E01","E02","P01","P02" };
+            //if (prod.detail.Length > 0)
+            //{
+            //    HashSet<string> approvedMachines = new HashSet<string> { "A01", "A02","A03","A04","A05","G01", "K01", "K02", "K03", "K04", "K05", "K06", "K07", "K08", "K09", "K10", "K11", "K12", "K13", "T01","T02", "T03","H04","H05","H06","H07","S01","S02","F01","W01","E01","E02","P01","P02" };
 
-                foreach (var item in prod.detail)
-                {
-                    if ((item.bom != null && item.bom.StartsWith("3")) ||
-                        (approvedMachines.Contains(item.binnumber)))
-                    {
-                        item.inventorystatus = "APROBADO";
-                    }
-                }
-            }
+            //    foreach (var item in prod.detail)
+            //    {
+            //        if ((item.bom != null && item.bom.StartsWith("3")) ||
+            //            (approvedMachines.Contains(item.binnumber)))
+            //        {
+            //            item.inventorystatus = "APROBADO";
+            //        }
+            //    }
+            //}
 
             logger.LogInformation($"Procesando ultimo tiempo de declaracion");
             await ProcesarUltimaDeclaracionAsync(infoOrder, infoWOrder, prod, ct);
